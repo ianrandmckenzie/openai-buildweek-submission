@@ -1,0 +1,25 @@
+<script lang="ts">
+  import { moveCard, sortPinned, toggleChecklist, type QuicknoteCard } from '../quicknotes/board';
+  export let initialCards: QuicknoteCard[] = [];
+  export let onChange: (cards: QuicknoteCard[]) => void = () => undefined;
+
+  let cards = sortPinned(initialCards); let draggedId: string | undefined; let draftTitle = ''; let draftBody = '';
+  function update(next: QuicknoteCard[]): void { cards = next; onChange(cards); }
+  function addCard(): void { if (!draftTitle.trim() && !draftBody.trim()) return; update([{ id: crypto.randomUUID(), title: draftTitle.trim() || 'Untitled', body: draftBody.trim(), pinned: false, checklist: [] }, ...cards]); draftTitle = ''; draftBody = ''; }
+  function toggle(card: QuicknoteCard, itemId: string): void { update(cards.map((current) => current.id === card.id ? toggleChecklist(current, itemId) : current)); }
+  function drop(targetId: string): void { if (!draggedId || draggedId === targetId) return; const from = cards.findIndex((card) => card.id === draggedId); const to = cards.findIndex((card) => card.id === targetId); update(moveCard(cards, from, to)); draggedId = undefined; }
+  function remove(id: string): void { update(cards.filter((card) => card.id !== id)); }
+  function pin(id: string): void { update(sortPinned(cards.map((card) => card.id === id ? { ...card, pinned: !card.pinned } : card))); }
+</script>
+
+<div class="quicknotes-view" aria-label="Quicknotes">
+  <div class="notes-toolbar"><div><p class="eyebrow">Capture quickly</p><h4>Quicknotes</h4></div><form class="new-note" on:submit|preventDefault={addCard}><input aria-label="New note title" bind:value={draftTitle} placeholder="Title" /><input aria-label="New note body" bind:value={draftBody} placeholder="Write a note…" /><button type="submit">Add note</button></form></div>
+  {#if cards.length}<div class="note-grid">{#each cards as card (card.id)}<article class:pinned={card.pinned} class="note-card" draggable="true" on:dragstart={() => draggedId = card.id} on:dragover|preventDefault on:drop={() => drop(card.id)}><div class="card-header"><span class="drag-handle" aria-label="Drag note">⋮⋮</span><h5 class="obfuscate-target">{card.title}</h5><button class="card-action" aria-label={card.pinned ? 'Unpin note' : 'Pin note'} on:click={() => pin(card.id)}>{card.pinned ? '★' : '☆'}</button><button class="card-action" aria-label="Delete note" on:click={() => remove(card.id)}>×</button></div>{#if card.body}<p class="note-body obfuscate-target">{card.body}</p>{/if}{#if card.checklist.length}<div class="checklist">{#each card.checklist as item}<label class:completed={item.completed}><input type="checkbox" checked={item.completed} on:change={() => toggle(card, item.id)} /><span class="obfuscate-target">{item.text}</span></label>{/each}</div>{/if}</article>{/each}</div>{:else}<div class="empty-state"><h5>Your board is clear</h5><p>Add a quicknote to get started.</p></div>{/if}
+</div>
+
+<style>
+  .quicknotes-view { padding: 1rem; } .notes-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; } .eyebrow { margin: 0; color: var(--text-muted); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; } h4 { margin: .2rem 0 0; font-size: 1.1rem; }
+  .new-note { display: flex; gap: .4rem; } input { min-width: 0; padding: .55rem .65rem; border: 1px solid var(--border-custom); border-radius: .4rem; background: var(--bg-elevated); color: var(--text-main); } button { padding: .55rem .7rem; border: 1px solid var(--border-custom); border-radius: .4rem; background: var(--accent-primary); color: var(--text-inverse); cursor: pointer; }
+  .note-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .8rem; align-items: start; } .note-card { min-height: 8rem; padding: .8rem; border: 1px solid var(--border-custom); border-radius: .65rem; background: var(--bg-elevated); } .note-card.pinned { border-color: var(--accent-primary); box-shadow: 0 0 0 1px var(--accent-primary); } .card-header { display: flex; align-items: center; gap: .35rem; } h5 { flex: 1; margin: 0; font-size: .9rem; } .drag-handle { color: var(--text-muted); cursor: grab; letter-spacing: -.2rem; } .card-action { padding: .1rem .3rem; border: 0; background: transparent; color: var(--text-muted); font-size: 1rem; } .note-body { color: var(--text-main); font-size: .8rem; line-height: 1.5; white-space: pre-wrap; } .checklist { display: grid; gap: .4rem; margin-top: .75rem; } .checklist label { display: flex; gap: .45rem; align-items: flex-start; color: var(--text-main); font-size: .78rem; } .checklist label.completed span { color: var(--text-muted); text-decoration: line-through; } .empty-state { padding: 4rem 1rem; text-align: center; } .empty-state h5 { font-size: 1rem; } .empty-state p { color: var(--text-muted); }
+  @media (max-width: 720px) { .notes-toolbar, .new-note { flex-direction: column; } .new-note { width: 100%; } .new-note input, .new-note button { width: 100%; } }
+</style>

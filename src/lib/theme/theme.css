@@ -1,0 +1,18 @@
+:root {
+  color-scheme: light;
+  background: var(--bg-primary);
+  color: var(--text-main);
+  font-family: system-ui, sans-serif;
+}
+
+:root[data-theme='dark'] { color-scheme: dark; }
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg-primary); color: var(--text-main); }
+button, input, textarea, select { color: inherit; background: var(--bg-elevated); border-color: var(--border-custom); }
+:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+:root { --blur-intensity: 8px; }
+.obfuscate-some .obfuscate-target { filter: blur(var(--blur-intensity)); user-select: none; }
+.obfuscate-all .obfuscate-target, .obfuscate-all .obfuscate-sensitive { filter: blur(var(--blur-intensity)); user-select: none; }
+.obfuscate-target, .obfuscate-sensitive { transition: filter .12s ease; }

@@ -1,0 +1,17 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+import { createCryptoProvider } from '../src/lib/storage/crypto';
+import { DB_NAME, STORE_NAMES, Storage, resetDatabase, openDatabase } from '../src/lib/storage/idb';
+
+beforeEach(async () => { await resetDatabase(); });
+
+async function provider() { return createCryptoProvider(await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt'])); }
+
+describe('local-first storage', () => {
+  it('creates every required object store', async () => { const db = await openDatabase(); expect([...db.objectStoreNames]).toEqual(expect.arrayContaining(STORE_NAMES)); });
+  it('creates, queries, updates, soft-deletes, and restores records', async () => { const storage = new Storage(); const project = await storage.create('projects', { id: 'p1', name: 'Build Week' }); expect(project.created_at).toBeTypeOf('number'); const updated = await storage.update('projects', { ...project, name: 'Build Week 2026' }); expect(updated.created_at).toBe(project.created_at); await storage.softDelete('projects', 'p1'); expect(await storage.list('projects')).toHaveLength(0); await storage.restoreRecord('projects', 'p1'); expect((await storage.get('projects', 'p1'))?.name).toBe('Build Week 2026'); });
+  it('filters by project and excludes deleted records', async () => { const storage = new Storage(); await storage.create('notes', { id: 'n1', project_id: 'p1', title: 'One', content: 'secret' }).catch((error) => expect(error.message).toContain('Crypto')); const secure = new Storage(await provider()); await secure.create('notes', { id: 'n1', project_id: 'p1', title: 'One', content: 'secret' }); await secure.create('notes', { id: 'n2', project_id: 'p2', title: 'Two', content: 'secret' }); expect(await secure.list('notes', 'p1')).toHaveLength(1); });
+  it('encrypts sensitive content and round-trips it', async () => { const secure = new Storage(await provider()); const saved = await secure.create('notes', { id: 'n1', project_id: 'p1', title: 'Private', content: 'do not log me' }); const db = await openDatabase(); const raw = await new Promise<any>((resolve, reject) => { const request = db.transaction('notes').objectStore('notes').get('n1'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }); expect(raw).toBeTruthy(); expect(raw).not.toHaveProperty('content'); expect(raw.content_encrypted).toMatchObject({ version: 1, algorithm: 'AES-GCM' }); expect(saved.content).toBe('do not log me'); });
+  it('rejects invalid ids and unknown stores', async () => { const storage = new Storage(); await expect(storage.get('projects', '')).rejects.toThrow(); await expect(storage.get('invalid' as never, 'x')).rejects.toThrow('Unknown store'); });
+  it('uses randomized nonces for repeated encryption', async () => { const cryptoProvider = await provider(); const a = await cryptoProvider.encrypt('same'); const b = await cryptoProvider.encrypt('same'); expect(a.ciphertext).not.toBe(b.ciphertext); });
+  it('fails closed with an incorrect key', async () => { const secure = new Storage(await provider()); await secure.create('notes', { id: 'n1', project_id: 'p1', title: 'Private', content: 'secret' }); const wrong = new Storage(await provider()); await expect(wrong.get('notes', 'n1')).rejects.toThrow(); });
+});

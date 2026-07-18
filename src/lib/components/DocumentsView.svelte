@@ -1,0 +1,19 @@
+<script lang="ts">
+  import { createDownloadAdapter } from '../utils/runtime';
+  import { createMarkdownDownload, renderMarkdown, sanitizeMarkdown } from '../documents/markdown';
+  export let initialTitle = 'Untitled document';
+  export let initialContent = '# Start writing\n\nYour document preview appears here.';
+  let title = initialTitle; let content = initialContent; let preview = true;
+  $: safeContent = sanitizeMarkdown(content); $: rendered = renderMarkdown(safeContent);
+  async function exportDocument(): Promise<void> { await createDownloadAdapter().download(createMarkdownDownload({ title, content: safeContent }), `${title.trim() || 'document'}.md`); }
+</script>
+
+<div class="documents-view" aria-label="Documents">
+  <div class="documents-toolbar"><div><p class="eyebrow">Markdown workspace</p><input class="title-input" aria-label="Document title" bind:value={title} /></div><div class="toolbar-actions"><button class:active={preview} on:click={() => preview = true}>Preview</button><button class:active={!preview} on:click={() => preview = false}>Edit</button><button on:click={exportDocument}>Export .md</button></div></div>
+  <div class="document-split" class:edit-only={!preview}><section class="editor-pane"><label for="markdown-editor">Markdown</label><textarea id="markdown-editor" bind:value={content} spellcheck="false" /></section><section class="preview-pane" aria-label="Rendered preview"><label>Preview</label><article class="markdown-output">{@html rendered}</article></section></div>
+</div>
+
+<style>
+  .documents-view { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 100%; padding: 1rem; } .documents-toolbar, .toolbar-actions { display: flex; align-items: center; justify-content: space-between; gap: .5rem; } .eyebrow { margin: 0 0 .25rem; color: var(--text-muted); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; } .title-input { width: min(28rem, 60vw); padding: .25rem 0; border: 0; border-bottom: 1px solid var(--border-custom); background: transparent; color: var(--text-main); font-size: 1.1rem; font-weight: 700; }
+  button { padding: .45rem .65rem; border: 1px solid var(--border-custom); border-radius: .4rem; background: var(--bg-elevated); color: var(--text-main); cursor: pointer; } button.active { background: var(--accent-secondary); } .document-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 0; margin-top: 1rem; border: 1px solid var(--border-custom); border-radius: .6rem; overflow: hidden; } .editor-pane, .preview-pane { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; padding: .8rem; } .editor-pane { border-right: 1px solid var(--border-custom); } label { margin-bottom: .5rem; color: var(--text-muted); font-size: .72rem; text-transform: uppercase; } textarea { width: 100%; height: 100%; resize: none; border: 0; outline: 0; background: var(--bg-secondary); color: var(--text-main); font: .85rem/1.6 ui-monospace, monospace; } .markdown-output { overflow: auto; color: var(--text-main); line-height: 1.6; } .markdown-output :global(h1), .markdown-output :global(h2), .markdown-output :global(h3) { line-height: 1.2; } .markdown-output :global(code) { padding: .1rem .25rem; border-radius: .2rem; background: var(--accent-secondary); } .markdown-output :global(pre) { overflow: auto; padding: .8rem; border-radius: .4rem; background: var(--bg-secondary); } .markdown-output :global(a) { color: var(--accent-primary); } .edit-only .preview-pane { display: none; } .edit-only { grid-template-columns: minmax(0, 1fr); } @media (max-width: 720px) { .documents-toolbar { align-items: flex-start; flex-direction: column; } .title-input { width: 100%; } .document-split { grid-template-columns: 1fr; } .editor-pane { min-height: 16rem; border-right: 0; border-bottom: 1px solid var(--border-custom); } }
+</style>
