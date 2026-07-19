@@ -4,6 +4,7 @@ import type { Metadata, RecordByStore, StoreName } from './models';
 
 export const DB_NAME = 'kenzie-dashboard';
 export const DB_VERSION = 1;
+export const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 export const STORE_NAMES: StoreName[] = ['projects', 'notes', 'tasks', 'documents', 'time_logs', 'launchpad_links', 'settings'];
 
 const encryptedFields: Partial<Record<StoreName, string[]>> = {
@@ -46,7 +47,7 @@ function assertStore(name: string): asserts name is StoreName { if (!STORE_NAMES
 function assertId(id: unknown): asserts id is string { if (typeof id !== 'string' || id.trim() === '') throw new Error('A non-empty string id is required'); }
 function metadata<T extends object>(input: T, now: number, existing?: Metadata): T & Metadata {
   const value = input as T & Partial<Metadata>;
-  return { ...value, id: value.id, created_at: existing?.created_at ?? value.created_at ?? now, updated_at: now, deleted_at: value.deleted_at ?? existing?.deleted_at ?? null, synced_at: value.synced_at ?? existing?.synced_at ?? null } as T & Metadata;
+  return { ...value, id: value.id, created_at: existing?.created_at ?? value.created_at ?? now, updated_at: now, deleted_at: value.deleted_at !== undefined ? value.deleted_at : existing?.deleted_at ?? null, synced_at: value.synced_at !== undefined ? value.synced_at : existing?.synced_at ?? null } as T & Metadata;
 }
 
 export class Storage {
@@ -75,6 +76,8 @@ export class Storage {
   async list<K extends StoreName>(name: K, projectId?: string): Promise<RecordByStore[K][]> {
     assertStore(name); const values = await this.transaction(name, 'readonly', (store) => store.getAll()); const filtered = (values as RecordByStore[K][]).filter((value) => value.deleted_at === null && (!projectId || (value as RecordByStore[K] & { project_id?: string }).project_id === projectId)); return Promise.all(filtered.map((value) => this.restore(name, value))) as Promise<RecordByStore[K][]>;
   }
+  async listTrash<K extends StoreName>(name: K): Promise<RecordByStore[K][]> { assertStore(name); const values = await this.transaction(name, 'readonly', (store) => store.getAll()); const deleted = (values as RecordByStore[K][]).filter((value) => value.deleted_at !== null); return Promise.all(deleted.map((value) => this.restore(name, value))) as Promise<RecordByStore[K][]>; }
+  async purgeExpired(now = Date.now()): Promise<number> { let removed = 0; for (const name of STORE_NAMES) { const values = await this.transaction(name, 'readonly', (store) => store.getAll()) as unknown as Array<{ id: string; deleted_at: number | null }>; const expired = values.filter((value) => value.deleted_at !== null && now - value.deleted_at >= TRASH_RETENTION_MS); for (const value of expired) { await this.transaction(name, 'readwrite', (store) => store.delete(value.id)); removed += 1; } } return removed; }
   async softDelete<K extends StoreName>(name: K, id: string): Promise<RecordByStore[K]> { const value = await this.get(name, id); if (!value) throw new Error('Record not found'); return this.update(name, { ...value, deleted_at: Date.now() }); }
   async restoreRecord<K extends StoreName>(name: K, id: string): Promise<RecordByStore[K]> { const value = await this.get(name, id); if (!value) throw new Error('Record not found'); return this.update(name, { ...value, deleted_at: null }); }
 

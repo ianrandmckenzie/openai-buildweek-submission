@@ -1,0 +1,11 @@
+<script lang="ts">
+  import { daysRemaining } from '../trash/lifecycle';
+  export interface TrashEntry { id: string; type: string; title: string; deleted_at: number; }
+  export let entries: TrashEntry[] = [];
+  export let onRestore: (entry: TrashEntry) => void = () => undefined;
+  export let onPurge: (entry: TrashEntry) => void = () => undefined;
+</script>
+<section class="trash-view" aria-label="Trash"><div class="trash-heading"><div><p class="eyebrow">30-day retention</p><h4>Trash</h4></div><span>{entries.length} item{entries.length === 1 ? '' : 's'}</span></div>{#if entries.length}<div class="trash-list">{#each entries as entry}<article><div><strong class="obfuscate-target">{entry.title}</strong><small>{entry.type} · {daysRemaining(entry.deleted_at)} days remaining</small></div><div class="actions"><button on:click={() => onRestore(entry)}>Restore</button><button class="danger" on:click={() => onPurge(entry)}>Delete permanently</button></div></article>{/each}</div>{:else}<div class="empty-trash"><h5>Trash is empty</h5><p>Soft-deleted items will remain here for 30 days.</p></div>{/if}</section>
+<style>
+  .trash-view { padding: 1rem; } .trash-heading, article, .actions { display: flex; align-items: center; } .trash-heading { justify-content: space-between; margin-bottom: 1rem; } .eyebrow { margin: 0; color: var(--text-muted); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; } h4 { margin: .2rem 0 0; } .trash-heading > span, small, p { color: var(--text-muted); font-size: .75rem; } .trash-list { display: grid; gap: .55rem; } article { justify-content: space-between; gap: 1rem; padding: .8rem; border: 1px solid var(--border-custom); border-radius: .55rem; background: var(--bg-elevated); } article div:first-child { display: grid; gap: .25rem; min-width: 0; } strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .actions { gap: .4rem; } button { padding: .45rem .6rem; border: 1px solid var(--border-custom); border-radius: .4rem; background: var(--bg-secondary); color: var(--text-main); cursor: pointer; font-size: .72rem; } .danger { color: var(--text-main); } .empty-trash { padding: 4rem 1rem; text-align: center; } h5 { margin: 0; } .empty-trash p { margin-top: .4rem; } @media (max-width: 600px) { article { align-items: flex-start; flex-direction: column; } }
+</style>

@@ -1,52 +1,24 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { monthLabel, monthMatrix, populateMonth, filterCalendarItems, type CalendarItem } from '../calendar/calendar';
+  import { monthLabel, monthMatrix, populateMonth, filterCalendarItems } from '../calendar/calendar';
+  import { draftFromEvent, type CalendarEvent } from '../calendar/events';
+  import EventModal from './EventModal.svelte';
   export let projectId: string | undefined = undefined;
-  export let items: CalendarItem[] = [];
-  export let onCreate: (date: string) => void = () => undefined;
-
+  export let items: CalendarEvent[] = [];
+  export let onChange: (items: CalendarEvent[]) => void = () => undefined;
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  let current = new Date();
-  let selectedDate: string | undefined;
+  let current = new Date(); let selectedDate: string | undefined; let modal: 'create' | 'detail' | 'edit' | undefined; let selectedEvent: CalendarEvent | undefined;
   $: days = populateMonth(monthMatrix(current.getFullYear(), current.getMonth()), filterCalendarItems(items, projectId));
   $: label = monthLabel(current.getFullYear(), current.getMonth());
-
   function shiftMonth(amount: number): void { current = new Date(current.getFullYear(), current.getMonth() + amount, 1); }
   function today(): void { current = new Date(); }
-  function createFor(date: string): void { selectedDate = date; onCreate(date); }
+  function createFor(date: string): void { selectedDate = date; selectedEvent = undefined; modal = 'create'; }
+  function openEvent(event: CalendarEvent): void { selectedEvent = event; modal = 'detail'; }
+  function save(event: CalendarEvent): void { const next = items.some((item) => item.id === event.id) ? items.map((item) => item.id === event.id ? event : item) : [...items, event]; items = next; onChange(next); modal = undefined; selectedEvent = undefined; }
+  function remove(event: CalendarEvent): void { const next = items.filter((item) => item.id !== event.id); items = next; onChange(next); modal = undefined; selectedEvent = undefined; }
   onMount(() => { selectedDate = new Date().toISOString().slice(0, 10); });
 </script>
-
-<div class="calendar-view" aria-label="Calendar">
-  <div class="calendar-toolbar">
-    <div class="month-controls"><button class="calendar-button" aria-label="Previous month" on:click={() => shiftMonth(-1)}>‹</button><button class="calendar-button" aria-label="Next month" on:click={() => shiftMonth(1)}>›</button><h4>{label}</h4><button class="today-button" on:click={today}>Today</button></div>
-    <p class="scope-label">{projectId ? `Project: ${projectId}` : 'All projects'}</p>
-  </div>
-  <div class="weekday-row">{#each weekdays as weekday}<span>{weekday}</span>{/each}</div>
-  <div class="calendar-grid">
-    {#each days as day}
-      <article class:outside={!day.inMonth} class:selected={selectedDate === day.isoDate} class="calendar-cell" aria-label={day.isoDate}>
-        <div class="cell-header"><span>{day.day}</span><button class="add-button" aria-label={`Create item on ${day.isoDate}`} on:click={() => createFor(day.isoDate)}>+</button></div>
-        <div class="cell-items">{#each day.items.slice(0, 3) as item}<div class="calendar-item obfuscate-target" title={item.title}>{item.title}</div>{/each}{#if day.items.length > 3}<span class="more-items">+{day.items.length - 3} more</span>{/if}</div>
-      </article>
-    {/each}
-  </div>
-</div>
-
+<div class="calendar-view" aria-label="Calendar"><div class="calendar-toolbar"><div class="month-controls"><button class="calendar-button" aria-label="Previous month" on:click={() => shiftMonth(-1)}>‹</button><button class="calendar-button" aria-label="Next month" on:click={() => shiftMonth(1)}>›</button><h4>{label}</h4><button class="today-button" on:click={today}>Today</button></div><p class="scope-label">{projectId ? `Project: ${projectId}` : 'All projects'}</p></div><div class="weekday-row">{#each weekdays as weekday}<span>{weekday}</span>{/each}</div><div class="calendar-grid">{#each days as day}<article class:outside={!day.inMonth} class:selected={selectedDate === day.isoDate} class="calendar-cell" aria-label={day.isoDate}><div class="cell-header"><span>{day.day}</span><button class="add-button" aria-label={`Create item on ${day.isoDate}`} on:click={() => createFor(day.isoDate)}>+</button></div><div class="cell-items">{#each day.items.slice(0, 3) as item}<button class="calendar-item obfuscate-target" on:click={() => openEvent(item as CalendarEvent)}>{item.title}</button>{/each}{#if day.items.length > 3}<span class="more-items">+{day.items.length - 3} more</span>{/if}</div></article>{/each}</div>{#if modal}<EventModal mode={modal} event={selectedEvent} date={new Date(`${selectedDate}T00:00:00`)} projectId={projectId ?? 'default'} on:save={(event) => save(event.detail)} on:delete={(event) => remove(event.detail)} on:close={() => { modal = undefined; selectedEvent = undefined; }} />{/if}</div>
 <style>
-  .calendar-view { padding: 1rem; }
-  .calendar-toolbar, .month-controls, .cell-header { display: flex; align-items: center; }
-  .calendar-toolbar { justify-content: space-between; margin-bottom: 1rem; }
-  .month-controls { gap: .45rem; } h4 { min-width: 10rem; margin: 0 .5rem; font-size: 1rem; }
-  .calendar-button, .today-button, .add-button { border: 1px solid var(--border-custom); border-radius: .4rem; background: var(--bg-elevated); color: var(--text-main); cursor: pointer; }
-  .calendar-button { width: 1.9rem; height: 1.9rem; font-size: 1.2rem; } .today-button { padding: .4rem .6rem; font-size: .75rem; }
-  .scope-label { margin: 0; color: var(--text-muted); font-size: .75rem; }
-  .weekday-row, .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
-  .weekday-row { color: var(--text-muted); font-size: .7rem; text-transform: uppercase; } .weekday-row span { padding: .45rem; }
-  .calendar-cell { min-height: 6.5rem; overflow: hidden; padding: .45rem; border-top: 1px solid var(--border-custom); border-right: 1px solid var(--border-custom); background: var(--bg-primary); }
-  .calendar-cell:nth-child(7n + 1) { border-left: 1px solid var(--border-custom); } .calendar-cell:nth-last-child(-n + 7) { border-bottom: 1px solid var(--border-custom); }
-  .calendar-cell.outside { background: var(--bg-secondary); color: var(--text-muted); opacity: .7; } .calendar-cell.selected { box-shadow: inset 0 0 0 2px var(--focus-ring); }
-  .cell-header { justify-content: space-between; font-size: .78rem; font-weight: 700; } .add-button { width: 1.3rem; height: 1.3rem; padding: 0; opacity: 0; } .calendar-cell:hover .add-button, .add-button:focus-visible { opacity: 1; }
-  .cell-items { display: grid; gap: .25rem; margin-top: .5rem; } .calendar-item { overflow: hidden; padding: .25rem .35rem; border-radius: .25rem; background: var(--accent-secondary); color: var(--text-main); font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; } .more-items { color: var(--text-muted); font-size: .68rem; }
-  @media (max-width: 720px) { .calendar-cell { min-height: 4.75rem; padding: .3rem; } .calendar-item { font-size: .6rem; } h4 { min-width: 7rem; } }
+  .calendar-view { padding: .25rem 0; } .calendar-toolbar, .month-controls, .cell-header { display: flex; align-items: center; } .calendar-toolbar { justify-content: space-between; margin-bottom: 1rem; } .month-controls { gap: .45rem; } h4 { min-width: 10rem; margin: 0 .5rem; font-size: 1rem; } .calendar-button, .today-button, .add-button { border: 1px solid var(--border-custom); border-radius: .4rem; background: var(--bg-elevated); color: var(--text-main); cursor: pointer; } .calendar-button { width: 1.9rem; height: 1.9rem; font-size: 1.2rem; } .today-button { padding: .4rem .6rem; font-size: .75rem; } .scope-label { margin: 0; color: var(--text-muted); font-size: .75rem; } .weekday-row, .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); } .weekday-row { color: var(--text-muted); font-size: .7rem; text-transform: uppercase; } .weekday-row span { padding: .45rem; } .calendar-cell { min-height: 7rem; overflow: hidden; padding: .55rem; border-top: 1px solid var(--border-custom); border-right: 1px solid var(--border-custom); background: var(--bg-primary); } .calendar-cell:nth-child(7n + 1) { border-left: 1px solid var(--border-custom); } .calendar-cell:nth-last-child(-n + 7) { border-bottom: 1px solid var(--border-custom); } .calendar-cell.outside { background: var(--bg-secondary); color: var(--text-muted); opacity: .7; } .calendar-cell.selected { box-shadow: inset 0 0 0 2px var(--focus-ring); } .cell-header { justify-content: space-between; font-size: .78rem; font-weight: 700; } .add-button { width: 1.3rem; height: 1.3rem; padding: 0; opacity: 0; } .calendar-cell:hover .add-button, .add-button:focus-visible { opacity: 1; } .cell-items { display: grid; gap: .25rem; margin-top: .5rem; } .calendar-item { overflow: hidden; padding: .25rem .35rem; border: 0; border-radius: .25rem; background: var(--accent-secondary); color: var(--text-main); cursor: pointer; font: inherit; font-size: .7rem; text-align: left; text-overflow: ellipsis; white-space: nowrap; } .more-items { color: var(--text-muted); font-size: .68rem; } @media (max-width: 720px) { .calendar-cell { min-height: 4.75rem; padding: .3rem; } .calendar-item { font-size: .6rem; } h4 { min-width: 7rem; } }
 </style>

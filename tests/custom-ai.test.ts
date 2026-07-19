@@ -1,0 +1,9 @@
+import { describe, expect, it, vi } from 'vitest';
+import { CustomApiClient, validateAIConfig, type ClerkAIConfig } from '../src/lib/integrations/custom-ai';
+
+const ai: ClerkAIConfig = { endpoint: 'http://localhost:8080/v1/chat', apiKey: 'secret-key', model: 'local-model', maxTokens: 500, transcriptionModel: 'local-transcribe' };
+describe('custom AI and API hooks', () => {
+  it('routes Clerk requests to the configured endpoint with bearer auth', async () => { const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), { status: 200 })); await new CustomApiClient(fetcher as any).clerk(ai, { messages: [{ role: 'user', content: 'Hello' }] }); const [url, init] = fetcher.mock.calls[0]; expect(url).toBe(ai.endpoint); expect(init.headers.Authorization).toBe('Bearer secret-key'); expect(JSON.parse(init.body)).toMatchObject({ model: 'local-model', max_tokens: 500 }); });
+  it('routes sync calls to a custom base URL and reports failures', async () => { const fetcher = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ saved: true }), { status: 200 })).mockResolvedValueOnce(new Response('', { status: 500 })); const client = new CustomApiClient(fetcher as any); await expect(client.sync({ baseUrl: 'http://localhost:9000/api/', apiToken: 'sync-token' }, '/records', { id: 'x' })).resolves.toEqual({ saved: true }); expect(fetcher.mock.calls[0][0]).toBe('http://localhost:9000/api/records'); await expect(client.sync({ baseUrl: 'http://localhost:9000', apiToken: 'sync-token' }, 'records', {})).rejects.toThrow('500'); });
+  it('validates model and token limits without exposing key material', () => { expect(() => validateAIConfig({ ...ai, model: '' })).toThrow('model'); expect(() => validateAIConfig({ ...ai, maxTokens: 0 })).toThrow('Max tokens'); expect(() => validateAIConfig({ ...ai, endpoint: 'file:///secret' })).toThrow('HTTP'); });
+});

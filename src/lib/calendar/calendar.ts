@@ -5,6 +5,10 @@ export interface CalendarItem {
   starts_at: number;
   ends_at?: number;
   kind?: 'event' | 'task' | 'log';
+  description?: string;
+  location?: string;
+  all_day?: boolean;
+  read_only?: boolean;
 }
 
 export interface CalendarDay {

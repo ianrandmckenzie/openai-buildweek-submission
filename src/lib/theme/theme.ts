@@ -1,4 +1,4 @@
-import { writable, type Readable } from 'svelte/store';
+import { writable, get, type Readable } from 'svelte/store';
 import type { Storage } from '../storage/idb';
 import type { Setting } from '../storage/models';
 import { sanitizeTokenOverrides, tokensForMode, type ColorMode, type ResolvedColorMode, type ThemeTokens } from './tokens';
@@ -11,6 +11,9 @@ export interface ThemeConfiguration {
 }
 
 export const defaultThemeConfiguration: ThemeConfiguration = { mode: 'system', customTokens: {} };
+export const globalThemeMode = writable<ResolvedColorMode>('light');
+export function applyGlobalTheme(mode: ColorMode): ResolvedColorMode { const resolved = resolveColorMode(mode, prefersDarkMode()); const tokens = tokensForMode(resolved); globalThemeMode.set(resolved); setDocumentTheme(resolved, tokens); return resolved; }
+export function toggleGlobalTheme(): ResolvedColorMode { const current = get(globalThemeMode); return applyGlobalTheme(current === 'dark' ? 'light' : 'dark'); }
 
 export function resolveColorMode(mode: ColorMode, prefersDark: boolean): ResolvedColorMode {
   return mode === 'system' ? (prefersDark ? 'dark' : 'light') : mode;

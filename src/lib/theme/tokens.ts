@@ -21,9 +21,9 @@ export const lightTokens: ThemeTokens = {
 };
 
 export const darkTokens: ThemeTokens = {
-  '--bg-primary': '#15171a', '--bg-secondary': '#202328', '--bg-elevated': '#292d33',
-  '--text-main': '#f3f5f7', '--text-muted': '#aeb6c0', '--text-inverse': '#15171a',
-  '--border-custom': '#424852', '--accent-primary': '#9eafff', '--accent-secondary': '#303a69', '--focus-ring': '#9eafff',
+  '--bg-primary': '#000000', '--bg-secondary': '#0c111d', '--bg-elevated': '#101727',
+  '--text-main': '#edf3ff', '--text-muted': '#8b9bb5', '--text-inverse': '#000000',
+  '--border-custom': '#1e3558', '--accent-primary': '#f4f7ff', '--accent-secondary': '#111c31', '--focus-ring': '#8ea9d5',
 };
 
 export function tokensForMode(mode: ResolvedColorMode, overrides: Partial<ThemeTokens> = {}): ThemeTokens {

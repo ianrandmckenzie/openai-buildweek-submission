@@ -2,7 +2,16 @@
   color-scheme: light;
   background: var(--bg-primary);
   color: var(--text-main);
-  font-family: system-ui, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fb;
+  --bg-elevated: #ffffff;
+  --text-main: #14203a;
+  --text-muted: #66748e;
+  --border-custom: #d8e0ed;
+  --accent-primary: #13203c;
+  --accent-secondary: #edf2f9;
+  --focus-ring: #8ba4cc;
 }
 
 :root[data-theme='dark'] { color-scheme: dark; }

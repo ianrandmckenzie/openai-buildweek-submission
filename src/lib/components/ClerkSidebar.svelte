@@ -1,12 +1,11 @@
 <script lang="ts">
   import { activeView, clerkOpen, navigateTo, views } from '../ui/navigation';
   import { get } from 'svelte/store';
+  import ClerkPanel from './ClerkPanel.svelte';
 
-  export let projects: string[] = [];
-  const currentView = get(activeView);
 </script>
 
-<aside class="clerk-sidebar" aria-label="Clerk and project navigation">
+<aside class="clerk-sidebar" aria-label="Clerk navigation">
   <div class="sidebar-header">
     <div class="brand-mark" aria-hidden="true">K</div>
     <div>
@@ -20,6 +19,7 @@
     <span class="status-dot" aria-hidden="true"></span>
     <div><strong>Ready when you are</strong><p>Ask Clerk to organize your workspace.</p></div>
   </div>
+  <ClerkPanel />
 
   <nav aria-label="Workspace views">
     <p class="section-label">Workspace</p>
@@ -30,14 +30,6 @@
     {/each}
   </nav>
 
-  <div class="projects">
-    <p class="section-label">Projects</p>
-    {#if projects.length}
-      {#each projects as project}<button class="project-item"><span class="project-dot" aria-hidden="true"></span>{project}</button>{/each}
-    {:else}<p class="empty-projects">No projects yet</p>{/if}
-  </div>
-
-  <div class="sidebar-footer"><button class="settings-button"><img src="/icons/blank/empty.svg" alt="" /> Settings</button></div>
 </aside>
 
 <style>
