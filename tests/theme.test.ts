@@ -3,6 +3,7 @@ import { defaultThemeConfiguration, resolveColorMode, ThemeController, THEME_SET
 import { darkTokens, lightTokens, sanitizeTokenOverrides, tokensForMode } from '../src/lib/theme/tokens';
 
 describe('theme tokens', () => {
+  it('provides readable inverse text for accent buttons in both modes', () => { expect(lightTokens['--text-inverse']).toBe('#ffffff'); expect(darkTokens['--text-inverse']).toBe('#000000'); });
   it('maps light and dark modes to complete token sets', () => { expect(tokensForMode('light')).toEqual(lightTokens); expect(tokensForMode('dark')).toEqual(darkTokens); });
   it('resolves system mode from appearance preference', () => { expect(resolveColorMode('system', true)).toBe('dark'); expect(resolveColorMode('system', false)).toBe('light'); expect(resolveColorMode('dark', false)).toBe('dark'); });
   it('filters invalid custom token values', () => { expect(sanitizeTokenOverrides({ '--accent-primary': '#abc', '--text-main': 'red' })).toEqual({ '--accent-primary': '#abc' }); });

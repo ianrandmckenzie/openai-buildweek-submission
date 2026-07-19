@@ -1,5 +1,6 @@
 <script lang="ts">
   import { activeView, activeViewLabel, clerkOpen } from '../ui/navigation';
+  import { loadProjects } from '../projects/state';
   import ClerkSidebar from './ClerkSidebar.svelte';
   import CalendarView from './CalendarView.svelte';
   import LaunchpadView from './LaunchpadView.svelte';
@@ -14,7 +15,7 @@
   import { onMount } from 'svelte';
   import ProjectRail from './ProjectRail.svelte';
   import ViewTabs from './ViewTabs.svelte';
-  onMount(() => createShortcutListener().destroy);
+  onMount(() => { void loadProjects(); return createShortcutListener().destroy; });
   import MainCanvas from './MainCanvas.svelte';
   import TopBar from './TopBar.svelte';
   export let projects: string[] = [];

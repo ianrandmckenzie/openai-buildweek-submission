@@ -9,6 +9,8 @@ export interface CalendarItem {
   location?: string;
   all_day?: boolean;
   read_only?: boolean;
+  completed?: boolean;
+  blurred?: boolean;
 }
 
 export interface CalendarDay {

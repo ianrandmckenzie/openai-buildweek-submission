@@ -3,9 +3,9 @@ import type { CryptoProvider } from './crypto';
 import type { Metadata, RecordByStore, StoreName } from './models';
 
 export const DB_NAME = 'kenzie-dashboard';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 export const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
-export const STORE_NAMES: StoreName[] = ['projects', 'notes', 'tasks', 'documents', 'time_logs', 'launchpad_links', 'settings'];
+export const STORE_NAMES: StoreName[] = ['projects', 'notes', 'tasks', 'documents', 'time_logs', 'launchpad_links', 'events', 'settings'];
 
 const encryptedFields: Partial<Record<StoreName, string[]>> = {
   notes: ['content'], documents: ['content'], tasks: ['notes'],
@@ -16,13 +16,19 @@ const openConnections = new Set<IDBDatabase>();
 
 function upgrade(db: IDBDatabase, oldVersion: number): void {
   if (oldVersion < 1) {
-    for (const name of STORE_NAMES) {
+    for (const name of STORE_NAMES.filter((name) => name !== 'events')) {
       const store = db.createObjectStore(name, { keyPath: 'id' });
       store.createIndex('by_updated_at', 'updated_at');
       store.createIndex('by_deleted_at', 'deleted_at');
       if (name !== 'settings') store.createIndex('by_project_id', 'project_id');
       if (name === 'settings') store.createIndex('by_key', 'key', { unique: true });
     }
+  }
+  if (oldVersion < 2) {
+    const store = db.createObjectStore('events', { keyPath: 'id' });
+    store.createIndex('by_updated_at', 'updated_at');
+    store.createIndex('by_deleted_at', 'deleted_at');
+    store.createIndex('by_project_id', 'project_id');
   }
 }
 

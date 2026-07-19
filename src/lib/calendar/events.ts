@@ -1,4 +1,4 @@
-export interface CalendarEvent { id: string; project_id: string; title: string; description?: string; location?: string; starts_at: number; ends_at?: number; all_day?: boolean; source_type?: 'manual' | 'ics' | 'google'; read_only?: boolean; }
+export interface CalendarEvent { id: string; project_id: string; title: string; description?: string; location?: string; starts_at: number; ends_at?: number; all_day?: boolean; source_type?: 'manual' | 'ics' | 'google'; read_only?: boolean; created_at?: number; updated_at?: number; deleted_at?: number | null; synced_at?: number | null; }
 export type EventDraft = Omit<CalendarEvent, 'id' | 'starts_at' | 'ends_at'> & { starts_at: string; ends_at: string };
 
 export function validateEventDraft(draft: Partial<EventDraft>): string | undefined { if (!draft.title?.trim()) return 'Title is required'; if (!draft.starts_at) return 'Start date is required'; if (draft.ends_at && new Date(draft.ends_at).getTime() < new Date(draft.starts_at).getTime()) return 'End date must be after the start date'; return undefined; }

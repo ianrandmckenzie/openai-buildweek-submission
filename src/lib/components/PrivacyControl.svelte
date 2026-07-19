@@ -4,7 +4,7 @@
 </script>
 
 <div class="privacy-control">
-  <button class="control-button" aria-label="Cycle privacy obfuscation" aria-pressed={$obfuscationMode !== 'none'} title={obfuscationLabel($obfuscationMode)} on:click={cycleObfuscation}><img src="/icons/blank/empty.svg" alt="" /></button>
+  <button class="control-button" aria-label="Cycle privacy obfuscation" aria-pressed={$obfuscationMode !== 'none'} title={obfuscationLabel($obfuscationMode)} on:click={cycleObfuscation}><img src="/tmp-icons/obfuscation.svg" alt="" /></button>
   <label class="blur-control"> <span>Blur</span><select aria-label="Blur strength" value={$blurStrength} on:change={(event) => setBlurStrength((event.currentTarget as HTMLSelectElement).value as BlurStrength)}>{#each Object.keys(blurValues) as strength}<option value={strength}>{strength.toUpperCase()}</option>{/each}</select></label>
 </div>
 

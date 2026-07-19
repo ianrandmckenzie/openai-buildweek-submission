@@ -6,11 +6,11 @@
   export let date = new Date();
   export let projectId = 'default';
   const dispatch = createEventDispatcher<{ save: CalendarEvent; delete: CalendarEvent; close: void }>();
-  let draft: EventDraft = { project_id: projectId, title: '', description: '', location: '', starts_at: '', ends_at: '', all_day: false, source_type: 'manual', read_only: false }; let error = '';
-  $: if (event && mode !== 'create' && !draft.title) draft = draftFromEvent(event);
+  let draft: EventDraft = { project_id: projectId, title: '', description: '', location: '', starts_at: '', ends_at: '', all_day: false, source_type: 'manual', read_only: false }; let error = ''; let blurred = false;
+  $: if (event && mode !== 'create' && !draft.title) { draft = draftFromEvent(event); blurred = event.blurred ?? false; }
   $: if (mode === 'create' && !draft.starts_at) { const start = new Date(date); start.setHours(9, 0, 0, 0); const end = new Date(start); end.setHours(10); draft = { ...draft, starts_at: toInput(start), ends_at: toInput(end) }; }
   function toInput(value: Date): string { const pad = (number: number) => String(number).padStart(2, '0'); return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}T${pad(value.getHours())}:${pad(value.getMinutes())}`; }
-  function save(): void { error = validateEventDraft(draft) ?? ''; if (error) return; dispatch('save', eventFromDraft(draft, event?.id)); }
+  function save(): void { error = validateEventDraft(draft) ?? ''; if (error) return; dispatch('save', { ...eventFromDraft(draft, event?.id), blurred }); }
   function close(): void { dispatch('close'); }
   function onBackdrop(event: MouseEvent): void { if (event.target === event.currentTarget) close(); }
   function keydown(event: KeyboardEvent): void { if (event.key === 'Escape') close(); }

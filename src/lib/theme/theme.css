@@ -8,13 +8,14 @@
   --bg-elevated: #ffffff;
   --text-main: #14203a;
   --text-muted: #66748e;
+  --text-inverse: #ffffff;
   --border-custom: #d8e0ed;
   --accent-primary: #13203c;
   --accent-secondary: #edf2f9;
   --focus-ring: #8ba4cc;
 }
 
-:root[data-theme='dark'] { color-scheme: dark; }
+:root[data-theme='dark'] { color-scheme: dark; --text-inverse: #000000; }
 
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; background: var(--bg-primary); color: var(--text-main); }

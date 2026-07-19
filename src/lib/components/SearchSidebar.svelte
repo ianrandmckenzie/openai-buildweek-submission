@@ -1,0 +1,15 @@
+<script lang="ts">
+  import { onMount } from 'svelte';
+  import { PersistentCollection } from '../storage/persistent';
+  import type { StoreName } from '../storage/models';
+  let query = ''; let records: Array<{ type: string; title: string; text: string }> = [];
+  const stores: Array<[StoreName, string, (value: any) => { title: string; text: string }]> = [
+    ['tasks', 'Task', (value) => ({ title: value.title, text: value.notes ?? '' })], ['events', 'Event', (value) => ({ title: value.title, text: `${value.description ?? ''} ${value.location ?? ''}` })],
+    ['notes', 'Quicknote / Doc', (value) => ({ title: value.title, text: value.content ?? '' })], ['documents', 'Doc', (value) => ({ title: value.title, text: value.content ?? '' })],
+    ['launchpad_links', 'Launchpad', (value) => ({ title: value.title, text: `${value.url} ${(value.tags ?? []).join(' ')}` })], ['time_logs', 'Time log', (value) => ({ title: value.task_id ?? 'Time log', text: `${value.started_at} ${value.ended_at ?? ''}` })]
+  ];
+  onMount(async () => { const loaded = await Promise.all(stores.map(async ([store, type, map]) => (await new PersistentCollection(store).load()).map((value) => ({ type, ...map(value) })))); records = loaded.flat(); });
+  $: results = records.filter((record) => `${record.title} ${record.text}`.toLowerCase().includes(query.trim().toLowerCase()));
+</script>
+<div class="focus-panel"><div class="panel-heading"><h2>Search</h2><button>All projects</button></div><p>Find notes, tasks, events, and launchpad links in one list.</p><input aria-label="Search all data" bind:value={query} placeholder="Search everything…" />{#if query.trim()}<div class="results" aria-label="Search results">{#if results.length}{#each results as result}<article><span>{result.type}</span><strong>{result.title}</strong><small>{result.text}</small></article>{/each}{:else}<div class="result-placeholder">No matching results</div>{/if}</div>{:else}<div class="result-placeholder">Search across all data types</div>{/if}</div>
+<style>.focus-panel{display:grid;gap:.65rem;height:100%;padding:1.15rem 1rem}.panel-heading{display:flex;align-items:center;justify-content:space-between}h2{margin:0;font-size:1.05rem}p,small{color:var(--text-muted);font-size:.78rem;line-height:1.4}button,input{padding:.55rem .65rem;border:1px solid var(--border-custom);border-radius:.4rem;background:var(--bg-elevated);color:var(--text-main)}input{width:100%}.results{display:grid;gap:.5rem;overflow:auto}.results article{display:grid;gap:.25rem;padding:.7rem;border:1px solid var(--border-custom);border-radius:.45rem;background:var(--bg-elevated)}.results span{font-size:.6rem;color:var(--text-muted)}.results small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.result-placeholder{display:grid;place-content:center;min-height:10rem;border:1px dashed var(--border-custom);border-radius:.5rem;color:var(--text-muted);text-align:center}</style>

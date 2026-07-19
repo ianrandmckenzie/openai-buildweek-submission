@@ -1,6 +1,8 @@
 export interface ChecklistItem { id: string; text: string; completed: boolean; }
 export interface QuicknoteCard { id: string; title: string; body: string; pinned: boolean; checklist: ChecklistItem[]; }
 
+export function ensureQuicknoteId<T extends { id?: string }>(record: T): T & { id: string } { return { ...record, id: record.id?.trim() || crypto.randomUUID() }; }
+
 export function toggleChecklist(card: QuicknoteCard, itemId: string): QuicknoteCard {
   return { ...card, checklist: card.checklist.map((item) => item.id === itemId ? { ...item, completed: !item.completed } : item) };
 }
@@ -11,3 +13,4 @@ export function moveCard(cards: QuicknoteCard[], fromIndex: number, toIndex: num
 }
 
 export function sortPinned(cards: QuicknoteCard[]): QuicknoteCard[] { return [...cards].sort((a, b) => Number(b.pinned) - Number(a.pinned)); }
+export function partitionPinned<T extends { pinned?: boolean }>(items: T[]): { pinned: T[]; other: T[] } { return { pinned: items.filter((item) => item.pinned), other: items.filter((item) => !item.pinned) }; }
