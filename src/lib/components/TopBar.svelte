@@ -4,6 +4,7 @@
   import { globalThemeMode, globalThemeSetting, toggleGlobalTheme } from '../theme/theme';
   import { toggleSettings } from '../ui/settings';
   import PrivacyControl from './PrivacyControl.svelte';
+  import { syncAll } from '../sync/backend-sync';
   import {
     activeTimeLog,
     timerSetup,
@@ -17,6 +18,9 @@
   import { projects, selectedProject, selectedProjectId } from '../projects/state';
   let timerTitle = '';
   let timerProject = '';
+  let syncing = false;
+  let syncMessage = '';
+  async function runSync(): Promise<void> { if (syncing) return; syncing = true; syncMessage = 'Syncing…'; const result = await syncAll(); syncMessage = result === 'synced' ? 'Synced' : result === 'skipped' ? 'Local only' : 'Sync failed'; syncing = false; setTimeout(() => (syncMessage = ''), 2200); }
   $: if ($selectedProjectId && !timerProject) timerProject = $selectedProjectId;
   export let syncLabel: string | undefined;
 </script>
@@ -41,8 +45,8 @@
       aria-label="Settings"
       on:click={toggleSettings}
       ><img src="/tmp-icons/settings-cog.svg" alt="" /></button
-    ><button class="header-icon" aria-label="Sync"
-      ><img src="/tmp-icons/sync.svg" alt="" /></button
+    ><button class="header-icon" aria-label="Sync" title={syncMessage || 'Sync now'} disabled={syncing} on:click={runSync}
+    ><img src="/tmp-icons/sync.svg" alt="" /></button
     >{#if $activeTimeLog}<div class="timer-control">
         <button
           class="timer-button"

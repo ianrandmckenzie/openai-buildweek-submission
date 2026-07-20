@@ -1,5 +1,12 @@
 use serde::{Deserialize, Serialize};
 
+pub fn run() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_shell::init())
+        .run(tauri::generate_context!())
+        .expect("error while running DeskClerk");
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 pub struct SyncRecord {
     pub id: String,

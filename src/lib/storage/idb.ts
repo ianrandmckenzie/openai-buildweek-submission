@@ -12,6 +12,7 @@ const encryptedFields: Partial<Record<StoreName, string[]>> = {
 };
 
 export const dbStatus = writable<'closed' | 'opening' | 'ready' | 'unavailable'>('closed');
+export function notifyRecordChanged(store: StoreName, record: RecordByStore[StoreName]): void { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('deskclerk:record-changed', { detail: { store, record } })); }
 const openConnections = new Set<IDBDatabase>();
 
 function upgrade(db: IDBDatabase, oldVersion: number): void {
@@ -68,14 +69,14 @@ export class Storage {
   async create<K extends StoreName>(name: K, input: Omit<RecordByStore[K], keyof Metadata> & Partial<Pick<RecordByStore[K], keyof Metadata>>): Promise<RecordByStore[K]> {
     assertStore(name); assertId((input as Partial<Metadata>).id); const now = Date.now(); const value = await this.prepare(name, metadata(input, now) as RecordByStore[K]);
     await this.transaction(name, 'readwrite', (store) => store.add(value));
-    return (await this.restore(name, value as RecordByStore[K])) as RecordByStore[K];
+    const restored = (await this.restore(name, value as RecordByStore[K])) as RecordByStore[K]; notifyRecordChanged(name, restored); return restored;
   }
 
   async update<K extends StoreName>(name: K, input: RecordByStore[K]): Promise<RecordByStore[K]> {
     assertStore(name); assertId(input.id); const current = await this.get(name, input.id); if (!current) throw new Error('Record not found');
     const value = await this.prepare(name, metadata(input, Date.now(), current));
     await this.transaction(name, 'readwrite', (store) => store.put(value));
-    return (await this.restore(name, value as RecordByStore[K])) as RecordByStore[K];
+    const restored = (await this.restore(name, value as RecordByStore[K])) as RecordByStore[K]; notifyRecordChanged(name, restored); return restored;
   }
 
   async get<K extends StoreName>(name: K, id: string): Promise<RecordByStore[K] | undefined> { assertStore(name); assertId(id); const value = await this.transaction(name, 'readonly', (store) => store.get(id)); return this.restore(name, value as RecordByStore[K] | undefined); }

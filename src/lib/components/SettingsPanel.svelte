@@ -8,11 +8,14 @@
   import { createDownloadAdapter } from '../utils/runtime';
   import ProjectsPanel from './ProjectsPanel.svelte';
   import PrivacySettings from './PrivacySettings.svelte';
+  import BackendSettings from './BackendSettings.svelte';
   import CustomAISettings from './CustomAISettings.svelte';
-  import { clerkAIConfig, saveClerkAIConfig } from '../clerk/ai-config';
-  type SettingsTab = 'general' | 'projects' | 'screen-privacy' | 'advanced';
+  import { clerkAIConfig, saveClerkAIConfig, cloudSyncConfig, saveCloudSyncConfig } from '../clerk/ai-config';
+  type SettingsTab = 'general' | 'projects' | 'screen-privacy' | 'backend' | 'advanced';
   export let initialTab: SettingsTab = 'general';
-  let activeTab: SettingsTab = initialTab;
+  const settingsTabs: SettingsTab[] = ['general', 'projects', 'screen-privacy', 'backend', 'advanced'];
+  let activeTab: SettingsTab = settingsTabs.includes(initialTab) ? initialTab : 'general';
+  $: if (!settingsTabs.includes(initialTab)) activeTab = 'general';
   let message = '';
   let importText = '';
   function exportConfig(): void {
@@ -67,7 +70,8 @@
         class:active={activeTab === 'screen-privacy'}
         aria-selected={activeTab === 'screen-privacy'}
         on:click={() => (activeTab = 'screen-privacy')}>Screen Privacy</button
-      ><button class:active={activeTab === 'advanced'} aria-selected={activeTab === 'advanced'} on:click={() => (activeTab = 'advanced')}>Advanced</button
+      ><button class:active={activeTab === 'advanced'} aria-selected={activeTab === 'advanced'} on:click={() => (activeTab = 'advanced')}>AI Settings</button
+      ><button class:active={activeTab === 'backend'} aria-selected={activeTab === 'backend'} on:click={() => (activeTab = 'backend')}>Backend</button
       >
     </nav>
     <div class="settings-content">
@@ -93,7 +97,7 @@
             Local-first storage is active. Network sync and external endpoints
             will be configured in later sprints.
           </p>
-        </section>{:else if activeTab === 'projects'}<ProjectsPanel />{:else if activeTab === 'screen-privacy'}<PrivacySettings />{:else if activeTab === 'advanced'}<CustomAISettings ai={$clerkAIConfig} onChange={(_, ai) => saveClerkAIConfig(ai)} />{/if}
+        </section>{:else if activeTab === 'backend'}<BackendSettings />{:else if activeTab === 'projects'}<ProjectsPanel />{:else if activeTab === 'screen-privacy'}<PrivacySettings />{:else if activeTab === 'advanced'}<CustomAISettings showCloud={false} cloud={$cloudSyncConfig} ai={$clerkAIConfig} onChange={(cloud, ai) => { saveCloudSyncConfig(cloud); saveClerkAIConfig(ai); message = 'AI settings saved.'; }} />{/if}
       </div>
   </section>
 </div>
