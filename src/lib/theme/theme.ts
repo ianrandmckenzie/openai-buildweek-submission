@@ -11,9 +11,10 @@ export interface ThemeConfiguration {
 }
 
 export const defaultThemeConfiguration: ThemeConfiguration = { mode: 'system', customTokens: {} };
+export const globalThemeSetting = writable<ColorMode>('system');
 export const globalThemeMode = writable<ResolvedColorMode>('light');
-export function applyGlobalTheme(mode: ColorMode): ResolvedColorMode { const resolved = resolveColorMode(mode, prefersDarkMode()); const tokens = tokensForMode(resolved); globalThemeMode.set(resolved); setDocumentTheme(resolved, tokens); return resolved; }
-export function toggleGlobalTheme(): ResolvedColorMode { const current = get(globalThemeMode); return applyGlobalTheme(current === 'dark' ? 'light' : 'dark'); }
+export function applyGlobalTheme(mode: ColorMode): ResolvedColorMode { globalThemeSetting.set(mode); const resolved = resolveColorMode(mode, prefersDarkMode()); const tokens = tokensForMode(resolved); globalThemeMode.set(resolved); setDocumentTheme(resolved, tokens); return resolved; }
+export function toggleGlobalTheme(): ResolvedColorMode { const current = get(globalThemeSetting); const next: ColorMode = current === 'dark' ? 'light' : current === 'light' ? 'system' : 'dark'; return applyGlobalTheme(next); }
 
 export function resolveColorMode(mode: ColorMode, prefersDark: boolean): ResolvedColorMode {
   return mode === 'system' ? (prefersDark ? 'dark' : 'light') : mode;

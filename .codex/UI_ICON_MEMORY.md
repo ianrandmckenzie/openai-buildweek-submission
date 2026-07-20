@@ -6,7 +6,8 @@ Relevant mappings:
 
 - create/add: `add-plus.svg`
 - blur/obfuscation: `obfuscation.svg`
-- play/start: `circle-play.svg` or `play.svg`
+- play/start: `play.svg`
+- resume play: `circle-play.svg`
 - overflow/menu: `overflow-ellipsis.svg`
 - edit: `pencil.svg`
 - archive: `archive.svg`

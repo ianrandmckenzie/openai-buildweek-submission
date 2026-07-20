@@ -1,4 +1,4 @@
-export interface LaunchpadLinkInput { title: string; url: string; tags: string[]; project_id: string; }
+export interface LaunchpadLinkInput { title: string; url: string; tags: string[]; project_id: string; description: string; icon_color: string; }
 
 export function normalizeUrl(value: string): string {
   const raw = value.trim();
@@ -9,10 +9,10 @@ export function normalizeUrl(value: string): string {
   return parsed.toString();
 }
 
-export function parseLinkInput(url: string, title: string, tags: string, project_id: string): LaunchpadLinkInput {
+export function parseLinkInput(url: string, title: string, tags: string, project_id: string, description = '', icon_color = 'auto'): LaunchpadLinkInput {
   const normalized = normalizeUrl(url);
   const parsed = new URL(normalized);
-  return { title: title.trim() || parsed.hostname, url: normalized, tags: [...new Set(tags.split(',').map((tag) => tag.trim().toLowerCase()).filter(Boolean))], project_id };
+  return { title: title.trim() || parsed.hostname, url: normalized, tags: [...new Set(tags.split(',').map((tag) => tag.trim().toLowerCase()).filter(Boolean))], project_id, description: description.trim(), icon_color };
 }
 
 export function filterLinks<T extends { title: string; url: string; tags?: string[] }>(links: T[], query: string, tag?: string): T[] {

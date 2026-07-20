@@ -11,6 +11,7 @@
   } from '../quicknotes/board';
   import type { DocumentRecord } from '../documents/state';
   import { loadDocuments } from '../documents/state';
+  import { quicknotesScope } from '../quicknotes/state';
   import EventModal from './EventModal.svelte';
   import TaskModal from './TaskModal.svelte';
 
@@ -108,22 +109,17 @@
     }),
   });
   async function load(): Promise<void> {
-    cards = (await collection.load($selectedProjectId ?? undefined))
+    cards = (await collection.load($quicknotesScope === 'all' ? undefined : ($selectedProjectId ?? undefined)))
       .filter((note) => note.deleted_at === null)
       .map(decode) as Card[];
   }
   onMount(() => {
     void load();
   });
-  $: if ($selectedProjectId !== undefined) void load();
+  $: if ($selectedProjectId !== undefined || $quicknotesScope) void load();
   $: visible = sortPinned(
     cards.filter(
-      (card) =>
-        (showArchived ? card.archived : !card.archived) &&
-        (!query ||
-          `${card.title} ${card.body}`
-            .toLowerCase()
-            .includes(query.toLowerCase()))
+      (card) => (showArchived ? card.archived : !card.archived)
     )
   );
   $: sections = partitionPinned(visible);
@@ -222,6 +218,7 @@
     <div class="toolbar-actions">
       <input
         aria-label="Search quicknotes"
+        hidden
         bind:value={query}
         placeholder="Search notes…"
       /><button on:click={() => (showArchived = !showArchived)}

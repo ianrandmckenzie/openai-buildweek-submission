@@ -1,20 +1,21 @@
 <script lang="ts">
   import { createDownloadAdapter } from '../utils/runtime';
   import { createMarkdownDownload, renderMarkdown, sanitizeMarkdown } from '../documents/markdown';
-  import { currentDocument, saveCurrentDocument } from '../documents/state';
+  import { currentDocument, ensureCurrentDocument, saveCurrentDocument } from '../documents/state';
   export let initialTitle = 'Untitled document';
   export let initialContent = '# Start writing\n\nYour document preview appears here.';
   let title = initialTitle; let content = initialContent; let preview = true; let tagsText = '';
   $: if ($currentDocument) { title = $currentDocument.title; content = $currentDocument.content; tagsText = $currentDocument.tags.join(', '); }
   $: safeContent = sanitizeMarkdown(content); $: rendered = renderMarkdown(safeContent);
   async function exportDocument(): Promise<void> { await createDownloadAdapter().download(createMarkdownDownload({ title, content: safeContent }), `${title.trim() || 'document'}.md`); }
+  function ensureDocument(): void { if (!$currentDocument) ensureCurrentDocument(title, content); persist(); }
   function persist(): void { if ($currentDocument) saveCurrentDocument({ title, content, tags: tagsText.split(',').map((tag) => tag.trim()).filter(Boolean) }); }
 </script>
 
 <div class="documents-view" aria-label="Documents">
-  <div class="documents-toolbar"><input class="title-input" aria-label="Document title" bind:value={title} on:blur={persist} /></div>
-  <div class="document-split" class:edit-only={!preview}><section class="editor-pane"><label for="markdown-editor">Markdown</label><textarea id="markdown-editor" bind:value={content} on:blur={persist} spellcheck="false" /></section><section class="preview-pane" aria-label="Rendered preview"><label>Preview</label><article class="markdown-output">{@html rendered}</article></section></div>
-  <div class="document-bottom-bar"><div class="tag-editor"><label for="document-tags">Tags</label><input id="document-tags" aria-label="Document tags" placeholder="Tags (comma separated)" bind:value={tagsText} on:blur={persist} /></div><div class="toolbar-actions"><button class:active={preview} on:click={() => preview = true}>Preview</button><button class:active={!preview} on:click={() => preview = false}>Edit</button><button on:click={persist}>Save</button><button on:click={exportDocument}>Export .md</button></div></div>
+  <div class="documents-toolbar"><input class="title-input" aria-label="Document title" bind:value={title} on:input={ensureDocument} on:blur={persist} /></div>
+  <div class="document-split" class:edit-only={!preview}><section class="editor-pane"><label for="markdown-editor">Markdown</label><textarea id="markdown-editor" bind:value={content} on:input={ensureDocument} on:blur={persist} spellcheck="false"></textarea></section><section class="preview-pane" aria-label="Rendered preview"><label>Preview</label><article class="markdown-output">{@html rendered}</article></section></div>
+  <div class="document-bottom-bar"><div class="tag-editor"><label for="document-tags">Tags</label><input id="document-tags" aria-label="Document tags" placeholder="Tags (comma separated)" bind:value={tagsText} on:input={ensureDocument} on:blur={persist} /></div><div class="toolbar-actions"><button class:active={preview} on:click={() => preview = true}>Preview</button><button class:active={!preview} on:click={() => preview = false}>Edit</button><button on:click={persist}>Save</button><button on:click={exportDocument}>Export .md</button></div></div>
 </div>
 
 <style>

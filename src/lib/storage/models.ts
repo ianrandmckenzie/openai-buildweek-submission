@@ -23,7 +23,7 @@ export interface Task extends Metadata { project_id: string; title: string; comp
 export interface Document extends Metadata { project_id: string; title: string; content: string; content_encrypted?: EncryptedEnvelope; }
 export interface TimeLog extends Metadata { project_id: string; task_id?: string; started_at: number; ended_at?: number; duration_seconds?: number; }
 export interface Event extends Metadata { project_id: string; title: string; description?: string; location?: string; starts_at: number; ends_at?: number; all_day?: boolean; repeat?: 'none' | 'daily' | 'weekly' | 'monthly'; completed?: boolean; source_type?: 'manual' | 'ics' | 'google'; read_only?: boolean; }
-export interface LaunchpadLink extends Metadata { project_id: string; title: string; url: string; tags?: string[]; blurred?: boolean; pinned?: boolean; position?: number; }
+export interface LaunchpadLink extends Metadata { project_id: string; title: string; url: string; tags?: string[]; description?: string; icon_url?: string; icon_color?: string; blurred?: boolean; pinned?: boolean; archived?: boolean; position?: number; }
 export interface Setting extends Metadata { key: string; value: unknown; }
 
 export type RecordByStore = {

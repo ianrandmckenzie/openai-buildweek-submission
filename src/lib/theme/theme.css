@@ -1,8 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@400;500;600;700&family=Raleway:wght@400;500;600;700&display=swap');
+
 :root {
   color-scheme: light;
   background: var(--bg-primary);
   color: var(--text-main);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Raleway', sans-serif;
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fb;
   --bg-elevated: #ffffff;
@@ -15,7 +17,11 @@
   --focus-ring: #8ba4cc;
 }
 
+.font-sans { font-family: 'Raleway', sans-serif; }
+.font-serif { font-family: 'Grenze Gotisch', serif; font-size: 1.5em; }
+
 :root[data-theme='dark'] { color-scheme: dark; --text-inverse: #000000; }
+:root[data-theme='dark'] img[src^='/tmp-icons/'] { filter: invert(1); }
 
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; background: var(--bg-primary); color: var(--text-main); }
@@ -26,7 +32,7 @@ button, input, textarea, select { color: inherit; background: var(--bg-elevated)
 .obfuscate-some .blurred .routine-copy,
 .obfuscate-some .blurred .log-main,
 .obfuscate-some .blurred .link-tile a,
-.obfuscate-some .blurred .calendar-item > button,
+.obfuscate-some .blurred > button:not(.item-obfuscate),
 .obfuscate-some .blurred .card-header h5,
 .obfuscate-some .blurred > p,
 .obfuscate-some .blurred > small,
@@ -37,7 +43,7 @@ button, input, textarea, select { color: inherit; background: var(--bg-elevated)
 .obfuscate-some .blurred .routine-copy strong,
 .obfuscate-some .blurred .log-main strong,
 .obfuscate-some .blurred .log-main .description { filter: blur(var(--blur-intensity)); }
-.obfuscate-all .calendar-item > button,
+.obfuscate-all .calendar-item > button:not(.item-obfuscate),
 .obfuscate-all .note-card .card-header h5,
 .obfuscate-all .note-card > p,
 .obfuscate-all .doc-name,
@@ -54,10 +60,12 @@ button, input, textarea, select { color: inherit; background: var(--bg-elevated)
 .obfuscate-none .blurred .routine-copy,
 .obfuscate-none .blurred .log-main,
 .obfuscate-none .blurred .link-tile a,
-.obfuscate-none .blurred .calendar-item > button,
+.obfuscate-none .blurred > button:not(.item-obfuscate),
 .obfuscate-none .blurred .card-header h5,
 .obfuscate-none .blurred > p,
 .obfuscate-none .blurred > small,
 .obfuscate-none .blurred.doc-name,
 .obfuscate-none .blurred time { filter: none !important; user-select: auto; }
 .obfuscate-target, .obfuscate-sensitive { transition: filter .12s ease; }
+[aria-label="Search links"], [aria-label="Search quicknotes"] { display: none !important; }
+.focus-panel[aria-label="Search sidebar"] { overflow-y: auto; overscroll-behavior: contain; }
