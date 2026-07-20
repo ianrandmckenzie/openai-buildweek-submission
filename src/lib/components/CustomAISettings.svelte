@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { ClerkAIConfig, CloudSyncConfig } from '../integrations/custom-ai';
   export let cloud: CloudSyncConfig = { baseUrl: '', apiToken: '' };
-  export let ai: ClerkAIConfig = { endpoint: '', apiKey: '', model: 'gpt-4o-mini', maxTokens: 2048, transcriptionModel: 'gpt-4o-mini-transcribe' };
+  export let ai: ClerkAIConfig = { endpoint: '', apiKey: '', model: 'gpt-4o-mini', maxTokens: 2048, transcriptionModel: 'gpt-4o-transcribe' };
   export let onChange: (cloud: CloudSyncConfig, ai: ClerkAIConfig) => void = () => undefined;
 </script>
 <section class="ai-settings"><h4>Custom AI and API endpoints</h4><p>Keys are used only for the endpoint you specify and are never displayed in logs.</p><label>Cloud sync base URL<input bind:value={cloud.baseUrl} placeholder="https://your-sync.example/api" /></label><label>Cloud sync API token<input type="password" bind:value={cloud.apiToken} /></label><label>Clerk AI endpoint<input bind:value={ai.endpoint} placeholder="https://your-llm.example/v1/chat/completions" /></label><label>Clerk AI API key<input type="password" bind:value={ai.apiKey} /></label><div class="two-col"><label>AI model<input bind:value={ai.model} /></label><label>Max tokens<input type="number" min="1" bind:value={ai.maxTokens} /></label></div><label>Transcription model<input bind:value={ai.transcriptionModel} /></label><button on:click={() => onChange(cloud, ai)}>Save custom endpoints</button></section>

@@ -8,7 +8,9 @@
   import { createDownloadAdapter } from '../utils/runtime';
   import ProjectsPanel from './ProjectsPanel.svelte';
   import PrivacySettings from './PrivacySettings.svelte';
-  type SettingsTab = 'general' | 'projects' | 'screen-privacy';
+  import CustomAISettings from './CustomAISettings.svelte';
+  import { clerkAIConfig, saveClerkAIConfig } from '../clerk/ai-config';
+  type SettingsTab = 'general' | 'projects' | 'screen-privacy' | 'advanced';
   export let initialTab: SettingsTab = 'general';
   let activeTab: SettingsTab = initialTab;
   let message = '';
@@ -65,6 +67,7 @@
         class:active={activeTab === 'screen-privacy'}
         aria-selected={activeTab === 'screen-privacy'}
         on:click={() => (activeTab = 'screen-privacy')}>Screen Privacy</button
+      ><button class:active={activeTab === 'advanced'} aria-selected={activeTab === 'advanced'} on:click={() => (activeTab = 'advanced')}>Advanced</button
       >
     </nav>
     <div class="settings-content">
@@ -90,8 +93,8 @@
             Local-first storage is active. Network sync and external endpoints
             will be configured in later sprints.
           </p>
-        </section>{:else if activeTab === 'projects'}<ProjectsPanel />{:else}<PrivacySettings />{/if}
-    </div>
+        </section>{:else if activeTab === 'projects'}<ProjectsPanel />{:else if activeTab === 'screen-privacy'}<PrivacySettings />{:else if activeTab === 'advanced'}<CustomAISettings ai={$clerkAIConfig} onChange={(_, ai) => saveClerkAIConfig(ai)} />{/if}
+      </div>
   </section>
 </div>
 

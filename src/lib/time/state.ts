@@ -1,9 +1,11 @@
 import { derived, get, writable } from 'svelte/store';
 import { selectedProjectId } from '../projects/state';
+import { hydrateJsonState, readJsonState, writeJsonState } from '../storage/json-state';
 
 export interface TimeLogEntry { id:string; group_id:string; project_id:string; title:string; description:string; location?:string; startInput?:string; endInput?:string; started_at:number; ended_at:number|null; duration_seconds:number; active:boolean; paused:boolean; blurred:boolean; }
-const KEY='dashboard.time-logs.v1'; const read=():TimeLogEntry[]=>{try{return JSON.parse(localStorage.getItem(KEY)??'[]') as TimeLogEntry[]}catch{return[]}}; const write=(items:TimeLogEntry[])=>localStorage.setItem(KEY,JSON.stringify(items));
+const KEY='dashboard.time-logs.v1'; const read=():TimeLogEntry[]=>readJsonState(KEY,[]); const write=(items:TimeLogEntry[])=>writeJsonState(KEY,items);
 export const timeLogs=writable<TimeLogEntry[]>(read()); export const activeTimeLog=derived(timeLogs,($logs)=>{const active=$logs.find((log)=>log.active);if(!active)return undefined;return {...active,duration_seconds:$logs.filter((log)=>log.group_id===active.group_id).reduce((sum,log)=>sum+log.duration_seconds,0)}}); export const timerSetup=writable(false);
+void hydrateJsonState<TimeLogEntry[]>(KEY,[]).then((items)=>timeLogs.set(items));
 let interval:ReturnType<typeof setInterval>|undefined;
 function refresh(){timeLogs.update((logs)=>logs.map((log)=>log.active?{...log,duration_seconds:Math.max(0,Math.floor((Date.now()-log.started_at)/1000))}:log));}
 export function openTimerSetup(){timerSetup.set(true)} export function cancelTimerSetup(){timerSetup.set(false)}

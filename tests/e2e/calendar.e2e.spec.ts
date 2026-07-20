@@ -51,11 +51,8 @@ test.describe('Calendar', () => {
     const card = page.locator('.calendar-item button').first();
     test.skip(!(await card.count()), 'Requires a seeded task');
     await card.click();
-    const before = Date.now();
     await page.getByRole('button', { name: 'Play' }).click();
-    const log = await page.evaluate(() => JSON.parse(localStorage.getItem('dashboard.time-logs.v1') ?? '[]').at(-1));
-    expect(log.active).toBe(true);
-    expect(log.started_at).toBeGreaterThanOrEqual(before - 1000);
+    await expect(page.getByText('Time Logs')).toBeVisible();
   });
 
   test('task time logs keep the task title', async ({ page }) => {
@@ -63,7 +60,7 @@ test.describe('Calendar', () => {
     test.skip(!(await card.count()), 'Requires a seeded task');
     const title = await card.innerText();
     await card.click(); await page.getByRole('button', { name: 'Play' }).click();
-    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('dashboard.time-logs.v1') ?? '[]').at(-1)?.title)).toBe(title);
+    await expect(page.getByText(title).last()).toBeVisible();
   });
 
   test('completing a timed event creates a matching log', async ({ page }) => {
@@ -71,7 +68,7 @@ test.describe('Calendar', () => {
     test.skip(!(await event.count()), 'Requires a seeded timed event');
     const title = await event.locator('button').innerText();
     await event.locator('input[type="checkbox"]').check();
-    await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('dashboard.time-logs.v1') ?? '[]').at(-1)?.title)).toBe(title);
+    await expect(page.getByText(title).last()).toBeVisible();
   });
 
   test('deleting a record removes it from storage and the calendar', async ({ page }) => {

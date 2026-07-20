@@ -1,11 +1,12 @@
 <script lang="ts">
   import { selectedProjectId, projects } from '../projects/state';
   import { routineIsDue, routineLabel, type Routine, type RoutineFrequency } from '../routines/routines';
+  import { hydrateJsonState, readJsonState, writeJsonState } from '../storage/json-state';
   let routines: Routine[] = []; let selected: Routine | undefined; let showArchived = false; let editing = false; let title = ''; let frequency: RoutineFrequency = 'daily'; let customWeekday = 1; let customOrdinal = 1;
   const key = 'dashboard.routines.v1';
-  function load(): void { try { routines = JSON.parse(localStorage.getItem(key) ?? '[]') as Routine[]; } catch { routines = []; } }
-  function persist(): void { localStorage.setItem(key, JSON.stringify(routines)); }
-  load();
+  async function load(): Promise<void> { routines = await hydrateJsonState(key, readJsonState(key, [])); }
+  function persist(): void { writeJsonState(key, routines); }
+  void load();
   $: visible = routines.filter((routine) => !routine.archived === !showArchived && (!$selectedProjectId || routine.project_id === $selectedProjectId));
   function open(routine?: Routine): void { selected = routine ? { ...routine } : { id: '', project_id: $selectedProjectId ?? 'default', title: '', description: '', frequency: 'daily', interval: 1, weekdays: [], ordinals: [], blurred: false, archived: false, last_completed_at: null }; editing = true; title = routine?.title ?? ''; frequency = routine?.frequency ?? 'daily'; }
   function save(): void { if (!title.trim()) return; const routine: Routine = { id: selected?.id || crypto.randomUUID(), project_id: selected?.project_id ?? $selectedProjectId ?? 'default', title: title.trim(), description: selected?.description ?? '', frequency, interval: 1, weekdays: frequency === 'custom' ? [customWeekday] : [], ordinals: frequency === 'custom' ? [customOrdinal] : [], blurred: selected?.blurred ?? false, archived: selected?.archived ?? false, last_completed_at: selected?.last_completed_at ?? null }; routines = selected?.id ? routines.map((item) => item.id === routine.id ? routine : item) : [...routines, routine]; persist(); selected = routine; editing = false; }

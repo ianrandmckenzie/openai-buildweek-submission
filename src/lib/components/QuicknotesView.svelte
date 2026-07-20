@@ -11,6 +11,7 @@
   } from '../quicknotes/board';
   import type { DocumentRecord } from '../documents/state';
   import { loadDocuments } from '../documents/state';
+  import { hydrateJsonState, readJsonState, writeJsonState } from '../storage/json-state';
   import { quicknotesScope } from '../quicknotes/state';
   import EventModal from './EventModal.svelte';
   import TaskModal from './TaskModal.svelte';
@@ -24,19 +25,13 @@
   class QuicknoteStore {
     private key = 'dashboard.documents.v1';
     private read(): Note[] {
-      if (typeof localStorage === 'undefined') return [];
-      try {
-        return (
-          JSON.parse(localStorage.getItem(this.key) ?? '[]') as DocumentRecord[]
-        ).map((doc) => ({ ...doc, deleted_at: null, synced_at: null }));
-      } catch {
-        return [];
-      }
+      return readJsonState<DocumentRecord[]>(this.key, []).map((doc) => ({ ...doc, deleted_at: null, synced_at: null }));
     }
     private write(items: Note[]): void {
-      localStorage.setItem(this.key, JSON.stringify(items));
+      writeJsonState(this.key, items);
     }
     async load(projectId?: string): Promise<Note[]> {
+      await hydrateJsonState(this.key, []);
       return this.read().filter(
         (note) => !projectId || note.project_id === projectId
       );
@@ -56,7 +51,7 @@
         synced_at: null,
       };
       this.write([...this.read(), note]);
-      loadDocuments();
+      void loadDocuments(false);
       return note;
     }
     async update(note: Note): Promise<Note> {
@@ -64,12 +59,12 @@
       this.write(
         this.read().map((item) => (item.id === saved.id ? saved : item))
       );
-      loadDocuments();
+      void loadDocuments(false);
       return saved;
     }
     async softDelete(id: string): Promise<void> {
       this.write(this.read().filter((item) => item.id !== id));
-      loadDocuments();
+      void loadDocuments(false);
     }
   }
   const collection = new QuicknoteStore();
@@ -449,12 +444,16 @@
     cursor: pointer;
   }
   .note-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
-    gap: 0.8rem;
+    column-width: 15rem;
+    column-count: auto;
+    column-gap: 0.8rem;
   }
   .note-card {
+    display: inline-block;
+    width: 100%;
     min-height: 8rem;
+    margin: 0 0 0.8rem;
+    break-inside: avoid;
     padding: 0.8rem;
     border: 1px solid var(--border-custom);
     border-radius: 0.65rem;

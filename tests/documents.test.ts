@@ -1,9 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 import { allDocTags, currentDocument, createDocument, documents, docsScope, ensureCurrentDocument, openDocument, selectedDocTags, toggleDocTag, visibleDocuments } from '../src/lib/documents/state';
 import { projectViewMode, selectedProjectId } from '../src/lib/projects/state';
+import { writeJsonState } from '../src/lib/storage/json-state';
+import { sidebarView } from '../src/lib/ui/sidebar';
 
 describe('documents state', () => {
+  beforeEach(() => { documents.set([]); currentDocument.set(null); selectedDocTags.set([]); docsScope.set('project'); sidebarView.set('docs'); });
   it('creates and opens a persisted document-shaped record', () => {
     documents.set([]); const doc = createDocument('project-1');
     expect(doc.title).toBe('Untitled Doc'); expect(doc.project_id).toBe('project-1');
@@ -26,5 +29,22 @@ describe('documents state', () => {
     docsScope.set('all');
     expect(get(visibleDocuments).map((doc) => doc.id)).toEqual(['1', '2']);
     selectedProjectId.set(null); docsScope.set('project'); projectViewMode.set('project');
+  });
+  it('shows Quicknotes records in the Docs sidebar model', async () => {
+    writeJsonState('dashboard.documents.v1', [{ id:'quicknote-1', project_id:'p1', title:'Meeting note', content:JSON.stringify({ body:'Agenda', archived:false, blurred:false, pinned:false }), created_at:1, updated_at:1 }]);
+    await (await import('../src/lib/documents/state')).loadDocuments(false);
+    selectedProjectId.set('p1');
+    expect(get(visibleDocuments).map((doc) => doc.title)).toEqual(['Meeting note']);
+  });
+  it('opens Quicknote content as an editable note body instead of metadata JSON', () => {
+    const quicknote = { id:'quicknote-editor', project_id:'p1', title:'Mango', content:JSON.stringify({ body:'Step one\n\nStep two', checklist:[], pinned:false, archived:false, blurred:false }), tags:[], archived:false, created_at:1, updated_at:1 };
+    openDocument(quicknote);
+    expect(get(currentDocument)?.content).toBe('Step one\n\nStep two');
+  });
+  it('refreshes Docs from the shared cache after Quicknotes writes', async () => {
+    writeJsonState('dashboard.documents.v1', [{ id:'quicknote-2', project_id:'p1', title:'Fresh note', content:JSON.stringify({ body:'Body', archived:false }), created_at:1, updated_at:1 }]);
+    await (await import('../src/lib/documents/state')).loadDocuments(false);
+    selectedProjectId.set('p1');
+    expect(get(visibleDocuments)[0].title).toBe('Fresh note');
   });
 });

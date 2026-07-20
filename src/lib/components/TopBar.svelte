@@ -14,7 +14,7 @@
     stopTimer,
     formatTime,
   } from '../time/state';
-  import { projects, selectedProjectId } from '../projects/state';
+  import { projects, selectedProject, selectedProjectId } from '../projects/state';
   let timerTitle = '';
   let timerProject = '';
   $: if ($selectedProjectId && !timerProject) timerProject = $selectedProjectId;
@@ -24,7 +24,7 @@
 <header class="top-bar">
   <div class="brand-group">
     <strong class="brand">Kenzie<span>DeskClerk</span></strong><span
-      class="project-pill">Default Project</span
+      class="project-pill">{$selectedProject?.name ?? 'All projects'}</span
     ><button
       class="header-icon"
       class:dark-mode={$globalThemeMode === 'dark'}

@@ -1,6 +1,6 @@
 import { writable, derived } from 'svelte/store';
 
-export type ViewId = 'calendar' | 'launchpad' | 'quicknotes' | 'documents' | 'time-logs' | 'progress';
+export type ViewId = 'calendar' | 'launchpad' | 'quicknotes' | 'documents' | 'time-logs';
 
 export const views: Array<{ id: ViewId; label: string }> = [
   { id: 'calendar', label: 'Calendar' },
@@ -8,7 +8,6 @@ export const views: Array<{ id: ViewId; label: string }> = [
   { id: 'quicknotes', label: 'Quicknotes' },
   { id: 'documents', label: 'Documents' },
   { id: 'time-logs', label: 'Time Logs' },
-  { id: 'progress', label: 'Progress' },
 ];
 
 export const activeView = writable<ViewId>('calendar');

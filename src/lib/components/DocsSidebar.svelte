@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { sidebarView } from '../ui/sidebar';
   import { navigateTo } from '../ui/navigation';
   import type { DocumentRecord } from '../documents/state';
   import { docsScope, showArchivedDocs, selectedDocTags, visibleDocuments, allDocTags, openDocument, createDocument, toggleDocTag, loadDocuments, updateDocument, deleteDocument } from '../documents/state';
 
   onMount(loadDocuments);
+  $: if ($sidebarView === 'docs') void loadDocuments();
   let menu: string | null = null;
   let deleteTarget: DocumentRecord | null = null;
 
@@ -35,7 +37,7 @@
   <div class="doc-list">
     {#each $visibleDocuments as document (document.id)}
       <div class="doc-row" on:mouseleave={() => menu = null}>
-        <button class:blurred={document.blurred} class="doc-name" on:click={() => openDocument(document)}>{document.title || 'Untitled Doc'}</button>
+        <button class:blurred={document.blurred} class="doc-name" on:click={() => { openDocument(document); navigateTo('documents'); }}>{document.title || 'Untitled Doc'}</button>
         <div class="hover-actions">
           <button aria-label="Toggle document blur" on:click={() => updateDocument(document.id, { blurred: !document.blurred })}><img src={`/tmp-icons/${document.blurred ? 'obfuscated' : 'obfuscation'}.svg`} alt="" /></button>
           <button aria-label="Document actions" on:click={() => menu = menu === document.id ? null : document.id}><img src="/tmp-icons/overflow-ellipsis.svg" alt="" /></button>
