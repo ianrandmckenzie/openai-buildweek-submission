@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { activeView, activeViewLabel, clerkOpen } from '../ui/navigation';
+  import { activeView, clerkOpen } from '../ui/navigation';
   import { loadProjects } from '../projects/state';
   import ClerkSidebar from './ClerkSidebar.svelte';
   import CalendarView from './CalendarView.svelte';
@@ -23,7 +23,7 @@
 
 <div class="app-shell" class:clerk-collapsed={!$clerkOpen}>
   <div class="header-row"><TopBar /></div>
-  <div class="body-row"><ProjectRail />{#if $clerkOpen}<ClerkSidebar />{/if}<div class="content-column"><ViewTabs /><MainCanvas view={$activeViewLabel}>{#if $activeView === 'calendar'}<CalendarView />{:else if $activeView === 'launchpad'}<LaunchpadView />{:else if $activeView === 'quicknotes'}<QuicknotesView />{:else if $activeView === 'documents'}<DocumentsView />{:else if $activeView === 'progress'}<ProgressView />{:else if $activeView === 'time-logs'}<TimeLogsView />{/if}</MainCanvas></div>
+  <div class="body-row"><ProjectRail />{#if $clerkOpen}<ClerkSidebar />{/if}<div class="content-column"><ViewTabs /><MainCanvas view={$activeView}>{#if $activeView === 'calendar'}<CalendarView />{:else if $activeView === 'launchpad'}<LaunchpadView />{:else if $activeView === 'quicknotes'}<QuicknotesView />{:else if $activeView === 'documents'}<DocumentsView />{:else if $activeView === 'progress'}<ProgressView />{:else if $activeView === 'time-logs'}<TimeLogsView />{/if}</MainCanvas></div>
   </div>
   {#if $settingsOpen}<SettingsPanel initialTab={$settingsTab} />{/if}
   <ShortcutOverlay />

@@ -5,7 +5,7 @@ export type BlurStrength = 'xs' | 's' | 'm' | 'l' | 'xl' | '2xl';
 export const blurStrengths: BlurStrength[] = ['xs', 's', 'm', 'l', 'xl', '2xl'];
 
 export const blurValues: Record<BlurStrength, string> = { xs: '2px', s: '4px', m: '8px', l: '12px', xl: '18px', '2xl': '26px' };
-export const obfuscationMode = writable<ObfuscationMode>('none');
+export const obfuscationMode = writable<ObfuscationMode>('some');
 export const blurStrength = writable<BlurStrength>('m');
 
 export function cycleObfuscation(): ObfuscationMode {
@@ -29,5 +29,7 @@ export function applyObfuscation(mode: ObfuscationMode): void {
 }
 
 function getBlurStrength(): BlurStrength { let current: BlurStrength = 'm'; const unsubscribe = blurStrength.subscribe((value) => { current = value; }); unsubscribe(); return current; }
+
+if (typeof document !== 'undefined') applyObfuscation('some');
 
 export function obfuscationLabel(mode: ObfuscationMode): string { return mode === 'none' ? 'Privacy off' : mode === 'some' ? 'Some text blurred' : 'All text blurred'; }

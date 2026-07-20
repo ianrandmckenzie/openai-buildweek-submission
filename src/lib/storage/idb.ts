@@ -2,7 +2,7 @@ import { writable, type Writable } from 'svelte/store';
 import type { CryptoProvider } from './crypto';
 import type { Metadata, RecordByStore, StoreName } from './models';
 
-export const DB_NAME = 'kenzie-dashboard';
+export const DB_NAME = 'kenzie-deskclerk';
 export const DB_VERSION = 2;
 export const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 export const STORE_NAMES: StoreName[] = ['projects', 'notes', 'tasks', 'documents', 'time_logs', 'launchpad_links', 'events', 'settings'];
@@ -58,7 +58,7 @@ function metadata<T extends object>(input: T, now: number, existing?: Metadata):
 
 export class Storage {
   readonly stores: Record<StoreName, Writable<unknown[]>> = Object.fromEntries(STORE_NAMES.map((name) => [name, writable<unknown[]>([])])) as unknown as Record<StoreName, Writable<unknown[]>>;
-  constructor(private readonly crypto?: CryptoProvider) {}
+  constructor(private readonly crypto?: CryptoProvider) { }
 
   private async transaction<T>(name: StoreName, mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
     const db = await openDatabase();
@@ -87,6 +87,6 @@ export class Storage {
   async softDelete<K extends StoreName>(name: K, id: string): Promise<RecordByStore[K]> { const value = await this.get(name, id); if (!value) throw new Error('Record not found'); return this.update(name, { ...value, deleted_at: Date.now() }); }
   async restoreRecord<K extends StoreName>(name: K, id: string): Promise<RecordByStore[K]> { const value = await this.get(name, id); if (!value) throw new Error('Record not found'); return this.update(name, { ...value, deleted_at: null }); }
 
-  private async prepare<K extends StoreName>(name: K, value: RecordByStore[K]): Promise<RecordByStore[K]> { const fields = encryptedFields[name] ?? []; if (!fields.length) return value; if (!this.crypto) throw new Error(`Crypto provider required for ${name}`); const result = { ...value } as Record<string, unknown>; for (const field of fields) { const raw = result[field]; if (typeof raw === 'string') { result[`${field}_encrypted`] = await this.crypto.encrypt(raw); delete result[field]; } } return result as unknown as RecordByStore[K]; }
-  private async restore<K extends StoreName>(name: K, value: RecordByStore[K] | undefined): Promise<RecordByStore[K] | undefined> { if (!value) return undefined; const fields = encryptedFields[name] ?? []; if (!fields.length) return value; if (!this.crypto) throw new Error(`Crypto provider required to read ${name}`); const result = { ...value } as Record<string, unknown>; for (const field of fields) { const envelope = result[`${field}_encrypted`]; if (envelope) result[field] = await this.crypto.decrypt(envelope as never); } return result as unknown as RecordByStore[K]; }
+  private async prepare<K extends StoreName>(name: K, value: RecordByStore[K]): Promise<RecordByStore[K]> { const fields = encryptedFields[name] ?? []; if (!fields.length) return value; const result = { ...value } as Record<string, unknown>; const hasPlaintext = fields.some((field) => typeof result[field] === 'string'); if (hasPlaintext && !this.crypto) throw new Error(`Crypto provider required for ${name}`); for (const field of fields) { const raw = result[field]; if (typeof raw === 'string') { result[`${field}_encrypted`] = await this.crypto!.encrypt(raw); delete result[field]; } } return result as unknown as RecordByStore[K]; }
+  private async restore<K extends StoreName>(name: K, value: RecordByStore[K] | undefined): Promise<RecordByStore[K] | undefined> { if (!value) return undefined; const fields = encryptedFields[name] ?? []; if (!fields.length) return value; const result = { ...value } as Record<string, unknown>; const hasCiphertext = fields.some((field) => result[`${field}_encrypted`] !== undefined); if (hasCiphertext && !this.crypto) throw new Error(`Crypto provider required to read ${name}`); for (const field of fields) { const envelope = result[`${field}_encrypted`]; if (envelope) result[field] = await this.crypto!.decrypt(envelope as never); } return result as unknown as RecordByStore[K]; }
 }

@@ -1,13 +1,30 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Kenzie Dashboard",
+  "productName": "Kenzie DeskClerk",
   "version": "0.1.0",
   "identifier": "com.kenzie.dashboard",
-  "build": { "frontendDist": "../dist", "devUrl": "http://localhost:5173" },
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173"
+  },
   "app": {
     "withGlobalTauri": false,
-    "security": { "csp": "default-src 'self'; connect-src 'self' https:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline';" },
-    "windows": [{ "label": "main", "title": "Kenzie Dashboard", "width": 1280, "height": 800, "resizable": true }]
+    "security": {
+      "csp": "default-src 'self'; connect-src 'self' https:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline';"
+    },
+    "windows": [
+      {
+        "label": "main",
+        "title": "Kenzie DeskClerk",
+        "width": 1280,
+        "height": 800,
+        "resizable": true
+      }
+    ]
   },
-  "bundle": { "active": true, "targets": "all", "icon": [] }
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": []
+  }
 }

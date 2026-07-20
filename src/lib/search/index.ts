@@ -7,7 +7,7 @@ const mappings: Array<[StoreName, string, (value: any) => { title: string; text:
   ['notes', 'Quicknote / Doc', (value) => ({ title: value.title, text: value.content ?? '' })],
   ['documents', 'Doc', (value) => ({ title: value.title, text: value.content ?? '' })],
   ['launchpad_links', 'Launchpad', (value) => ({ title: value.title, text: `${value.url} ${(value.tags ?? []).join(' ')}` })],
-  ['time_logs', 'Time log', (value) => ({ title: value.task_id ?? 'Time log', text: `${value.started_at} ${value.ended_at ?? ''}` })]
+  ['time_logs', 'Time log', (value) => ({ title: value.title ?? value.task_id ?? 'Time log', text: `${value.description ?? ''} ${value.started_at} ${value.ended_at ?? ''}` })]
 ];
 export function searchRecords(records: Partial<Record<StoreName, RecordByStore[StoreName][]>>, query: string): SearchResult[] {
   const normalized = query.trim().toLowerCase();

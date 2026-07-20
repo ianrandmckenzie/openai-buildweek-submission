@@ -1,7 +1,7 @@
-# Kenzie Dashboard - Project Summary
+# Kenzie DeskClerk - Project Summary
 
 ## Overview
-Kenzie Dashboard is a highly customized, privacy-focused, cross-platform personal management suite. It is designed to run across Web, Android, iOS, Windows, macOS, and Linux, providing a comprehensive set of tools including calendar management, a launchpad for quick links, quicknotes, markdown documents, time logging, and progress tracking.
+Kenzie DeskClerk is a highly customized, privacy-focused, cross-platform personal management suite. It is designed to run across Web, Android, iOS, Windows, macOS, and Linux, providing a comprehensive set of tools including calendar management, a launchpad for quick links, quicknotes, markdown documents, time logging, and progress tracking.
 
 ## Core Architecture
 *   **Target Platforms:** Web (Svelte/Vite), Desktop & Mobile (Tauri wrappers).

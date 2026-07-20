@@ -23,6 +23,41 @@ button, input, textarea, select { color: inherit; background: var(--bg-elevated)
 :focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 
 :root { --blur-intensity: 8px; }
+.obfuscate-some .blurred .routine-copy,
+.obfuscate-some .blurred .log-main,
+.obfuscate-some .blurred .link-tile a,
+.obfuscate-some .blurred .calendar-item > button,
+.obfuscate-some .blurred .card-header h5,
+.obfuscate-some .blurred > p,
+.obfuscate-some .blurred > small,
+.obfuscate-some .blurred.doc-name,
 .obfuscate-some .obfuscate-target { filter: blur(var(--blur-intensity)); user-select: none; }
-.obfuscate-all .obfuscate-target, .obfuscate-all .obfuscate-sensitive { filter: blur(var(--blur-intensity)); user-select: none; }
+.obfuscate-some .blurred .routine-copy,
+.obfuscate-some .blurred .log-main { filter: none; }
+.obfuscate-some .blurred .routine-copy strong,
+.obfuscate-some .blurred .log-main strong,
+.obfuscate-some .blurred .log-main .description { filter: blur(var(--blur-intensity)); }
+.obfuscate-all .calendar-item > button,
+.obfuscate-all .note-card .card-header h5,
+.obfuscate-all .note-card > p,
+.obfuscate-all .doc-name,
+.obfuscate-all .markdown-output,
+.obfuscate-all .editor-pane textarea,
+.obfuscate-all .routine-copy strong,
+.obfuscate-all .log-main,
+.obfuscate-all .link-tile a,
+.obfuscate-all .obfuscate-target,
+.obfuscate-all .obfuscate-sensitive { filter: blur(var(--blur-intensity)); user-select: none; }
+.obfuscate-none .obfuscate-target,
+.obfuscate-none .obfuscate-sensitive,
+.obfuscate-none .blurred,
+.obfuscate-none .blurred .routine-copy,
+.obfuscate-none .blurred .log-main,
+.obfuscate-none .blurred .link-tile a,
+.obfuscate-none .blurred .calendar-item > button,
+.obfuscate-none .blurred .card-header h5,
+.obfuscate-none .blurred > p,
+.obfuscate-none .blurred > small,
+.obfuscate-none .blurred.doc-name,
+.obfuscate-none .blurred time { filter: none !important; user-select: auto; }
 .obfuscate-target, .obfuscate-sensitive { transition: filter .12s ease; }
