@@ -27,6 +27,16 @@ describe('time log expectations', () => {
     const stopped = get(timeLogs); expect(stopped.at(-1)?.active).toBe(false); expect(stopped.at(-1)?.paused).toBe(false);
   });
 
+  it('finalizes the previous entry before starting another timer', () => {
+    vi.useFakeTimers(); vi.setSystemTime(10_000);
+    startTimer('First', '', 'p1');
+    vi.setSystemTime(15_500);
+    startTimer('Second', '', 'p1');
+    const logs = get(timeLogs);
+    expect(logs[0]).toMatchObject({ active: false, paused: true, ended_at: 15_500, duration_seconds: 5 });
+    expect(logs[1]).toMatchObject({ active: true, title: 'Second' });
+  });
+
   it('groups resumed entries and exposes the active child', () => {
     timeLogs.set([sample({ id: 'a', active: false }), sample({ id: 'b', group_id: 'g', active: true, ended_at: null }) as never]);
     let groups: any[] = []; const unsubscribe = groupedTimeLogs.subscribe((value) => groups = value); expect(groups).toHaveLength(1); expect(groups[0].entries).toHaveLength(2); expect(groups[0].entries.some((entry: any) => entry.active)).toBe(true); unsubscribe();

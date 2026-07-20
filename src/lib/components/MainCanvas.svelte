@@ -1,11 +1,10 @@
 <script lang="ts">
   import { activeView } from '../ui/navigation';
-  import ScopeToggle from './ScopeToggle.svelte';
   export let view: string;
 </script>
 
 <main class="main-canvas" aria-label="Main workspace canvas">
-  <div class="canvas-actions">{#if $activeView !== 'documents'}<ScopeToggle />{/if}<slot name="actions" /></div>
+  <div class="canvas-actions"><slot name="actions" /></div>
   <section class="view-container" data-view={$activeView}><slot><div class="empty-view"><h4>{view} is ready</h4><p>Content for this workspace will appear here.</p></div></slot></section>
 </main>
 

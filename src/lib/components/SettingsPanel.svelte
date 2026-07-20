@@ -11,6 +11,7 @@
   import BackendSettings from './BackendSettings.svelte';
   import CustomAISettings from './CustomAISettings.svelte';
   import { clerkAIConfig, saveClerkAIConfig, cloudSyncConfig, saveCloudSyncConfig } from '../clerk/ai-config';
+  import { calendarPreferences, saveCalendarPreferences, type DisplayedDays } from '../calendar/preferences';
   type SettingsTab = 'general' | 'projects' | 'screen-privacy' | 'backend' | 'advanced';
   export let initialTab: SettingsTab = 'general';
   const settingsTabs: SettingsTab[] = ['general', 'projects', 'screen-privacy', 'backend', 'advanced'];
@@ -76,6 +77,12 @@
     </nav>
     <div class="settings-content">
       {#if activeTab === 'general'}<section class="settings-section">
+          <h4>Calendar</h4>
+          <label>Week starts on<select value={$calendarPreferences.weekStartsOn} on:change={(event) => saveCalendarPreferences({ ...$calendarPreferences, weekStartsOn: Number((event.currentTarget as HTMLSelectElement).value) })}><option value={0}>Sunday</option><option value={1}>Monday</option><option value={2}>Tuesday</option><option value={3}>Wednesday</option><option value={4}>Thursday</option><option value={5}>Friday</option><option value={6}>Saturday</option></select></label>
+          <p>This day becomes the far-left column in month and week views.</p>
+          <label>Displayed days<select value={$calendarPreferences.displayedDays} on:change={(event) => saveCalendarPreferences({ ...$calendarPreferences, displayedDays: (event.currentTarget as HTMLSelectElement).value as DisplayedDays })}><option value="full-week">Full week</option><option value="weekdays">Weekdays only</option><option value="weekdays-full-weekends">Weekdays only but full week on weekends</option></select></label>
+          <p>Choose whether the calendar displays weekends.</p>
+        </section><section class="settings-section">
           <h4>Data backup</h4>
           <p>
             Export a structured local backup or validate an existing dashboard
@@ -91,13 +98,7 @@
               {message}
             </p>{/if}
         </section>
-        <section class="settings-section">
-          <h4>Runtime</h4>
-          <p class="muted">
-            Local-first storage is active. Network sync and external endpoints
-            will be configured in later sprints.
-          </p>
-        </section>{:else if activeTab === 'backend'}<BackendSettings />{:else if activeTab === 'projects'}<ProjectsPanel />{:else if activeTab === 'screen-privacy'}<PrivacySettings />{:else if activeTab === 'advanced'}<CustomAISettings showCloud={false} cloud={$cloudSyncConfig} ai={$clerkAIConfig} onChange={(cloud, ai) => { saveCloudSyncConfig(cloud); saveClerkAIConfig(ai); message = 'AI settings saved.'; }} />{/if}
+        {:else if activeTab === 'backend'}<BackendSettings />{:else if activeTab === 'projects'}<ProjectsPanel />{:else if activeTab === 'screen-privacy'}<PrivacySettings />{:else if activeTab === 'advanced'}<CustomAISettings showCloud={false} cloud={$cloudSyncConfig} ai={$clerkAIConfig} onChange={(cloud, ai) => { saveCloudSyncConfig(cloud); saveClerkAIConfig(ai); message = 'AI settings saved.'; }} />{/if}
       </div>
   </section>
 </div>
@@ -184,6 +185,7 @@
     gap: 0.65rem;
     padding: 0 0 1.5rem;
   }
+  label { display: grid; gap: .35rem; color: var(--text-muted); font-size: .8rem; } select { padding: .6rem; border: 1px solid var(--border-custom); border-radius: .4rem; background: var(--bg-elevated); color: var(--text-main); font: inherit; }
   .settings-section + .settings-section {
     padding-top: 1.5rem;
     border-top: 1px solid var(--border-custom);

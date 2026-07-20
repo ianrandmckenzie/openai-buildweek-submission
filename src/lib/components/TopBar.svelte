@@ -1,10 +1,14 @@
 <script lang="ts">
-  import { activeViewLabel, clerkOpen, toggleClerk } from '../ui/navigation';
+  import { activeView, clerkOpen, toggleClerk, navigateTo } from '../ui/navigation';
   import { syncLabel as syncLabels, syncState } from '../ui/sync';
   import { globalThemeMode, globalThemeSetting, toggleGlobalTheme } from '../theme/theme';
   import { toggleSettings } from '../ui/settings';
   import PrivacyControl from './PrivacyControl.svelte';
   import { syncAll } from '../sync/backend-sync';
+  import { createCalendarRequest } from '../calendar/open';
+  import { createLaunchpadLinkRequest } from '../launchpad/open';
+  import { createQuicknoteRequest } from '../quicknotes/open';
+  import { createDocument } from '../documents/state';
   import {
     activeTimeLog,
     timerSetup,
@@ -23,6 +27,7 @@
   async function runSync(): Promise<void> { if (syncing) return; syncing = true; syncMessage = 'Syncing…'; const result = await syncAll(); syncMessage = result === 'synced' ? 'Synced' : result === 'skipped' ? 'Local only' : 'Sync failed'; syncing = false; setTimeout(() => (syncMessage = ''), 2200); }
   $: if ($selectedProjectId && !timerProject) timerProject = $selectedProjectId;
   export let syncLabel: string | undefined;
+  function createAction(view: string): void { if (view === 'calendar') return createCalendarRequest.set('event'); if (view === 'launchpad') return createLaunchpadLinkRequest.set(true); if (view === 'quicknotes') return createQuicknoteRequest.set(true); if (view === 'documents') { createDocument(); navigateTo('documents'); return; } if (view === 'time-logs') return openTimerSetup(); }
 </script>
 
 <header class="top-bar">
@@ -94,16 +99,10 @@
         aria-label="Open Clerk"
         on:click={toggleClerk}>☰</button
       >{/if}
-    <div><p class="eyebrow">{$activeViewLabel}</p></div>
+    <div class="sync-status"><span class="status-dot" class:syncing={$syncState === 'syncing'}></span>{syncLabel ?? syncLabels[$syncState]}</div>
   </div>
   <div class="top-actions">
-    <span class="sync-status"
-      ><span
-        class="status-dot"
-        class:syncing={$syncState === 'syncing'}
-        aria-hidden="true"
-      ></span>{syncLabel ?? syncLabels[$syncState]}</span
-    >
+    {#if $activeView === 'calendar'}<button class="create-button" on:click={() => createCalendarRequest.set('event')}>New Event</button><button class="create-button" on:click={() => createCalendarRequest.set('task')}>New Task</button>{:else if $activeView === 'launchpad'}<button class="create-button" on:click={() => createAction('launchpad')}>New Link</button>{:else if $activeView === 'quicknotes'}<button class="create-button" on:click={() => createAction('quicknotes')}>New Note</button>{:else if $activeView === 'documents'}<button class="create-button" on:click={() => createAction('documents')}>New Doc</button>{:else if $activeView === 'time-logs'}<button class="create-button" on:click={() => createAction('time-logs')}>Manual Entry</button>{/if}
   </div>
 </header>
 
@@ -124,6 +123,21 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+  }
+  .create-button {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-custom);
+    border-radius: 0.45rem;
+    background: var(--bg-elevated);
+    color: var(--text-main);
+    font: inherit;
+    font-size: 0.78rem;
+    cursor: pointer;
+  }
+  .create-button:hover,
+  .create-button:focus-visible {
+    border-color: var(--accent-primary);
+    background: var(--accent-secondary);
   }
   .brand {
     font:
@@ -166,6 +180,7 @@
   .timer-control {
     display: flex;
     position: relative;
+    padding-right: 2.25rem;
   }
   .timer-control .stop-button {
     display: none;

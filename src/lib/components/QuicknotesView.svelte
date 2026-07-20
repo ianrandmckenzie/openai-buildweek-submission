@@ -3,6 +3,8 @@
   import { PersistentCollection } from '../storage/persistent';
   import type { Note, Task, Event } from '../storage/models';
   import { selectedProjectId, projects } from '../projects/state';
+  import { quicknotesScope } from '../quicknotes/state';
+  import { createQuicknoteRequest } from '../quicknotes/open';
   import {
     ensureQuicknoteId,
     partitionPinned,
@@ -12,7 +14,8 @@
   import type { DocumentRecord } from '../documents/state';
   import { loadDocuments } from '../documents/state';
   import { hydrateJsonState, readJsonState, writeJsonState } from '../storage/json-state';
-  import { quicknotesScope } from '../quicknotes/state';
+  
+  import ScopeToggle from './ScopeToggle.svelte';
   import EventModal from './EventModal.svelte';
   import TaskModal from './TaskModal.svelte';
 
@@ -51,6 +54,7 @@
         synced_at: null,
       };
       this.write([...this.read(), note]);
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('deskclerk:record-changed', { detail: { store: 'notes', record: note } }));
       void loadDocuments(false);
       return note;
     }
@@ -78,6 +82,8 @@
   let checklistText = '';
   let query = '';
   let conversion: 'task' | 'event' | undefined;
+  let createOpen = false;
+  let newProjectId = 'default';
   const decode = (note: Note): Card => {
     try {
       const parsed = JSON.parse(note.content);
@@ -109,7 +115,17 @@
       .map(decode) as Card[];
   }
   onMount(() => {
+    const unsubscribe = createQuicknoteRequest.subscribe((request) => {
+      if (request) {
+        title = '';
+        body = '';
+        newProjectId = $selectedProjectId ?? 'default';
+        createOpen = true;
+        createQuicknoteRequest.set(false);
+      }
+    });
     void load();
+    return unsubscribe;
   });
   $: if ($selectedProjectId !== undefined || $quicknotesScope) void load();
   $: visible = sortPinned(
@@ -135,7 +151,7 @@
   async function add(): Promise<void> {
     if (!title.trim() && !body.trim()) return;
     const note = await collection.create({
-      project_id: $selectedProjectId ?? 'default',
+      project_id: newProjectId || $selectedProjectId || 'default',
       title: title.trim() || 'Untitled',
       content: JSON.stringify({
         body,
@@ -148,6 +164,7 @@
     cards = [...cards, decode(note)];
     title = '';
     body = '';
+    createOpen = false;
   }
   async function remove(): Promise<void> {
     if (!selected) return;
@@ -205,21 +222,13 @@
 </script>
 
 <div class="quicknotes-view" aria-label="Quicknotes">
-  <div class="notes-toolbar">
-    <div>
-      <p class="eyebrow">Capture quickly</p>
-      <h4>Quicknotes</h4>
-    </div>
-    <div class="toolbar-actions">
+  <div class="notes-toolbar"><div class="toolbar-left">
       <input
         aria-label="Search quicknotes"
         hidden
         bind:value={query}
         placeholder="Search notes…"
-      /><button on:click={() => (showArchived = !showArchived)}
-        >{showArchived ? 'Hide Archived' : 'Show Archived'}</button
-      >
-      <form on:submit|preventDefault={add}>
+      /><form on:submit|preventDefault={add}>
         <input
           aria-label="New note title"
           bind:value={title}
@@ -230,7 +239,7 @@
           placeholder="Write a note…"
         /><button type="submit">Add note</button>
       </form>
-    </div>
+    </div><div class="toolbar-right"><button class="archive-toggle" class:active={showArchived} on:click={() => (showArchived = !showArchived)}>{showArchived ? 'Hide Archived' : 'Show Archived'}</button><ScopeToggle /></div>
   </div>
   {#if visible.length}{#if sections.pinned.length}<section
         class="pinned-section"
@@ -329,6 +338,7 @@
     </div>{/if}
 </div>
 
+{#if createOpen}<div class="backdrop" role="presentation" on:click={(event) => event.target === event.currentTarget && (createOpen = false)}><section class="modal" role="dialog" aria-modal="true" aria-label="New quicknote" on:click|stopPropagation><header><h3>New Note</h3><button aria-label="Close" on:click={() => (createOpen = false)}><img src="/tmp-icons/close-x.svg" alt="" /></button></header><select aria-label="Quicknote project" bind:value={newProjectId}>{#each $projects.filter((project) => !project.deleted_at) as project}<option value={project.id}>{project.name}</option>{/each}</select><input aria-label="New quicknote title" bind:value={title} placeholder="Title" /><textarea aria-label="New quicknote body" bind:value={body} placeholder="Write a note…"></textarea><footer><button type="button" on:click={() => (createOpen = false)}>Cancel</button><button aria-label="Add quicknote" on:click={add}><img src="/tmp-icons/save.svg" alt="" /> Save</button></footer></section></div>{/if}
 {#if selected}<div
     class="backdrop"
     role="presentation"
@@ -420,11 +430,24 @@
     gap: 1rem;
     margin-bottom: 1rem;
   }
-  .toolbar-actions,
+  .toolbar-left,
+  .toolbar-right,
   form {
     display: flex;
     gap: 0.4rem;
     align-items: center;
+  }
+  .toolbar-right { margin-left: auto; }
+  .archive-toggle {
+    padding: 0.45rem 0.65rem;
+    background: var(--bg-elevated);
+    color: var(--text-muted);
+    font-size: 0.72rem;
+  }
+  .archive-toggle.active {
+    background: var(--accent-secondary);
+    color: var(--text-main);
+    font-weight: 700;
   }
   input,
   textarea,
@@ -540,7 +563,7 @@
   }
   .empty-state {
     text-align: center;
-    padding: 4rem;
+    padding: 0.5rem 0.65rem;
   }
   .eyebrow {
     margin: 0;
@@ -549,7 +572,8 @@
   }
   @media (max-width: 800px) {
     .notes-toolbar,
-    .toolbar-actions {
+    .toolbar-left,
+    .toolbar-right {
       flex-direction: column;
       align-items: stretch;
     }

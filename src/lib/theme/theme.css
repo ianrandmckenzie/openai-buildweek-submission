@@ -69,3 +69,7 @@ button, input, textarea, select { color: inherit; background: var(--bg-elevated)
 .obfuscate-target, .obfuscate-sensitive { transition: filter .12s ease; }
 [aria-label="Search links"], [aria-label="Search quicknotes"] { display: none !important; }
 .focus-panel[aria-label="Search sidebar"] { overflow-y: auto; overscroll-behavior: contain; }
+.calendar-view .cell-header { position: relative; pointer-events: none; }
+.calendar-view .cell-header > div { position: absolute; top: 0; right: 0; z-index: 10; pointer-events: auto; }
+.calendar-view .cell-header > div > button { position: relative; z-index: 2; }
+.calendar-view .cell-header > div > button { pointer-events: auto; }
