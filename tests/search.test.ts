@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { searchRecords } from '../src/lib/search/index';
 
 describe('global search', () => {
+  it('gives the Open result action clear hover feedback', () => {
+    const source = readFileSync('src/lib/components/SearchSidebar.svelte', 'utf8');
+    expect(source).toMatch(/\.open-result:hover\{[^}]*cursor:pointer;[^}]*text-decoration:underline/);
+  });
   it('indexes tasks, events, notes/docs, launchpad links, and time logs', () => {
     const result = searchRecords({
       tasks: [{ id: 't', project_id: 'p', title: 'Task alpha', completed: false, created_at: 1, updated_at: 1, deleted_at: null, synced_at: null }],

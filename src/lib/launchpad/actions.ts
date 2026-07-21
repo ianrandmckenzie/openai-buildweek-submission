@@ -1,4 +1,4 @@
-export function faviconUrl(url: string): string { try { const parsed = new URL(url); return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(parsed.hostname)}&sz=64`; } catch { return '/tmp-icons/launchpad.svg'; } }
+export function faviconUrl(url: string): string { try { const parsed = new URL(url); return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(parsed.hostname)}&sz=64`; } catch { return 'tmp-icons/launchpad.svg'; } }
 export function reorderLinks<T>(links: T[], from: number, to: number): T[] { if (from < 0 || to < 0 || from >= links.length || to >= links.length) return links; const next = [...links]; const [item] = next.splice(from, 1); next.splice(to, 0, item); return next; }
 export function toggleLinkFlag<T extends { blurred?: boolean; pinned?: boolean }>(link: T, flag: 'blurred' | 'pinned'): T { return { ...link, [flag]: !link[flag] }; }
 export function partitionPinned<T extends { pinned?: boolean }>(items: T[]): { pinned: T[]; other: T[] } { return { pinned: items.filter((item) => item.pinned), other: items.filter((item) => !item.pinned) }; }

@@ -4,9 +4,16 @@ import { allDocTags, currentDocument, createDocument, documents, docsScope, ensu
 import { projectViewMode, selectedProjectId } from '../src/lib/projects/state';
 import { writeJsonState } from '../src/lib/storage/json-state';
 import { sidebarView } from '../src/lib/ui/sidebar';
+import { readFileSync } from 'node:fs';
 
 describe('documents state', () => {
   beforeEach(() => { documents.set([]); currentDocument.set(null); selectedDocTags.set([]); docsScope.set('project'); sidebarView.set('docs'); });
+  it('keeps the Docs list scrollable with tags pinned to the footer', () => {
+    const source = readFileSync('src/lib/components/DocsSidebar.svelte', 'utf8');
+    expect(source).toContain('min-height:0');
+    expect(source).toMatch(/\.doc-list\{[^}]*min-height:0;[^}]*overflow-y:auto/);
+    expect(source).toMatch(/\.tags\{[^}]*min-height:0;[^}]*overflow:visible/);
+  });
   it('creates and opens a persisted document-shaped record', () => {
     documents.set([]); const doc = createDocument('project-1');
     expect(doc.title).toBe('Untitled Doc'); expect(doc.project_id).toBe('project-1');

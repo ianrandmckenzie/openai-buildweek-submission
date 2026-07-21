@@ -261,18 +261,18 @@
                   <button
                     aria-label="Toggle blur"
                     on:click|stopPropagation={() => toggle(card, 'blurred')}
-                    ><img src="/tmp-icons/obfuscation.svg" alt="" /></button
+                    ><img src="tmp-icons/obfuscation.svg" alt="" /></button
                   ><button
                     aria-label="Archive quicknote"
                     on:click|stopPropagation={() => toggle(card, 'archived')}
-                    ><img src="/tmp-icons/archive.svg" alt="" /></button
+                    ><img src="tmp-icons/archive.svg" alt="" /></button
                   ><button
                     aria-label={card.pinned
                       ? 'Unpin quicknote'
                       : 'Pin quicknote'}
                     on:click|stopPropagation={() => toggle(card, 'pinned')}
                     ><img
-                      src={`/tmp-icons/${card.pinned ? 'pin-filled' : 'pin'}.svg`}
+                      src={`tmp-icons/${card.pinned ? 'pin-filled' : 'pin'}.svg`}
                       alt=""
                     /></button
                   >
@@ -306,18 +306,18 @@
                   <button
                     aria-label="Toggle blur"
                     on:click|stopPropagation={() => toggle(card, 'blurred')}
-                    ><img src="/tmp-icons/obfuscation.svg" alt="" /></button
+                    ><img src="tmp-icons/obfuscation.svg" alt="" /></button
                   ><button
                     aria-label="Archive quicknote"
                     on:click|stopPropagation={() => toggle(card, 'archived')}
-                    ><img src="/tmp-icons/archive.svg" alt="" /></button
+                    ><img src="tmp-icons/archive.svg" alt="" /></button
                   ><button
                     aria-label={card.pinned
                       ? 'Unpin quicknote'
                       : 'Pin quicknote'}
                     on:click|stopPropagation={() => toggle(card, 'pinned')}
                     ><img
-                      src={`/tmp-icons/${card.pinned ? 'pin-filled' : 'pin'}.svg`}
+                      src={`tmp-icons/${card.pinned ? 'pin-filled' : 'pin'}.svg`}
                       alt=""
                     /></button
                   >
@@ -341,7 +341,7 @@
     </div>{/if}
 </div>
 
-{#if createOpen}<div class="backdrop" role="presentation" on:click={(event) => event.target === event.currentTarget && (createOpen = false)}><section class="modal" role="dialog" aria-modal="true" aria-label="New quicknote" on:click|stopPropagation><header><h3>New Note</h3><button aria-label="Close" on:click={() => (createOpen = false)}><img src="/tmp-icons/close-x.svg" alt="" /></button></header><select aria-label="Quicknote project" bind:value={newProjectId}>{#each $projects.filter((project) => !project.deleted_at) as project}<option value={project.id}>{project.name}</option>{/each}</select><input aria-label="New quicknote title" bind:value={title} placeholder="Title" /><textarea aria-label="New quicknote body" bind:value={body} placeholder="Write a note…"></textarea><footer><button type="button" on:click={() => (createOpen = false)}>Cancel</button><button aria-label="Add quicknote" on:click={add}><img src="/tmp-icons/save.svg" alt="" /> Save</button></footer></section></div>{/if}
+{#if createOpen}<div class="backdrop" role="presentation" on:click={(event) => event.target === event.currentTarget && (createOpen = false)}><section class="modal" role="dialog" aria-modal="true" aria-label="New quicknote" on:click|stopPropagation><header><h3>New Note</h3><button aria-label="Close" on:click={() => (createOpen = false)}><img src="tmp-icons/close-x.svg" alt="" /></button></header><select aria-label="Quicknote project" bind:value={newProjectId}>{#each $projects.filter((project) => !project.deleted_at) as project}<option value={project.id}>{project.name}</option>{/each}</select><input aria-label="New quicknote title" bind:value={title} placeholder="Title" /><textarea aria-label="New quicknote body" bind:value={body} placeholder="Write a note…"></textarea><footer><button type="button" on:click={() => (createOpen = false)}>Cancel</button><button aria-label="Add quicknote" on:click={add}><img src="tmp-icons/save.svg" alt="" /> Save</button></footer></section></div>{/if}
 {#if selected}<div
     class="backdrop"
     role="presentation"
@@ -361,15 +361,15 @@
           <button
             aria-label="Pin quicknote"
             on:click={() => toggle(selected!, 'pinned')}
-            ><img src="/tmp-icons/pin.svg" alt="" /></button
+            ><img src="tmp-icons/pin.svg" alt="" /></button
           ><button
             aria-label="Archive quicknote"
             on:click={() => toggle(selected!, 'archived')}
-            ><img src="/tmp-icons/archive.svg" alt="" /></button
+            ><img src="tmp-icons/archive.svg" alt="" /></button
           ><button aria-label="Delete quicknote" on:click={remove}
-            ><img src="/tmp-icons/trash.svg" alt="" /></button
+            ><img src="tmp-icons/trash.svg" alt="" /></button
           ><button aria-label="Close" on:click={() => (selected = undefined)}
-            ><img src="/tmp-icons/close-x.svg" alt="" /></button
+            ><img src="tmp-icons/close-x.svg" alt="" /></button
           >
         </div>
       </header>
@@ -396,15 +396,15 @@
       </div>
       <footer>
         <button aria-label="Save quicknote" on:click={save}
-          ><img src="/tmp-icons/save.svg" alt="" /> Save</button
+          ><img src="tmp-icons/save.svg" alt="" /> Save</button
         ><button
           aria-label="Convert to task"
           on:click={() => (conversion = 'task')}
-          ><img src="/tmp-icons/checkbox.svg" alt="" /></button
+          ><img src="tmp-icons/checkbox.svg" alt="" /></button
         ><button
           aria-label="Convert to event"
           on:click={() => (conversion = 'event')}
-          ><img src="/tmp-icons/calendar-plus.svg" alt="" /></button
+          ><img src="tmp-icons/calendar-plus.svg" alt="" /></button
         >
       </footer>
     </section>

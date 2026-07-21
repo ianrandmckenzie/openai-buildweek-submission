@@ -10,8 +10,8 @@ describe('example workspace generator', () => {
     await generateExampleData(1_000_000);
     const storage = new Storage();
     const projects = await storage.list('projects');
-    expect(projects.map((project) => project.name)).toEqual(expect.arrayContaining(['Northwest Roofing', 'Side Door Studio']));
-    expect((await storage.list('events')).some((event) => event.project_id === projects.find((project) => project.name === 'Northwest Roofing')?.id)).toBe(true);
+    expect(projects.map((project) => project.name)).toEqual(expect.arrayContaining(['Cascade Roofing Co.', 'Side Door Web Design']));
+    expect((await storage.list('events')).some((event) => event.project_id === projects.find((project) => project.name === 'Cascade Roofing Co.')?.id)).toBe(true);
     expect((await storage.list('launchpad_links')).some((link) => link.tags.includes('design'))).toBe(true);
     expect(readJsonState<any[]>('dashboard.routines.v1', [])).toHaveLength(2);
   });
@@ -25,7 +25,7 @@ describe('example workspace generator', () => {
   it('creates visible time logs for both example projects', async () => {
     await generateExampleData(1_000_000);
     const logs = readJsonState<any[]>('dashboard.time-logs.v1', []);
-    expect(logs.filter((log) => log.project_id === 'example-space-roofing')).toHaveLength(31);
-    expect(logs.filter((log) => log.project_id === 'example-space-studio')).toHaveLength(31);
+    expect(logs.filter((log) => log.project_id === 'example-space-roofing')).toHaveLength(16);
+    expect(logs.filter((log) => log.project_id === 'example-space-studio')).toHaveLength(11);
   });
 });

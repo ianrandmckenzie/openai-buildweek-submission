@@ -42,26 +42,26 @@
       title={`Theme: ${$globalThemeSetting}. Click to switch.`}
       on:click={toggleGlobalTheme}
       ><img
-        src={`/tmp-icons/${$globalThemeSetting === 'dark' ? 'sun' : $globalThemeSetting === 'light' ? 'moon' : 'system'}.svg`}
+        src={`tmp-icons/${$globalThemeSetting === 'dark' ? 'sun' : $globalThemeSetting === 'light' ? 'moon' : 'system'}.svg`}
         alt=""
       /></button
     ><PrivacyControl /><button
       class="header-icon"
       aria-label="Settings"
       on:click={toggleSettings}
-      ><img src="/tmp-icons/settings-cog.svg" alt="" /></button
+      ><img src="tmp-icons/settings-cog.svg" alt="" /></button
     ><button class="header-icon" aria-label="Sync" title={syncMessage || 'Sync now'} disabled={syncing} on:click={runSync}
-    ><img src="/tmp-icons/sync.svg" alt="" /></button
+    ><img src="tmp-icons/sync.svg" alt="" /></button
     >{#if $activeTimeLog}<div class="timer-control">
         <button
           class="timer-button"
           aria-label="Pause timer"
           on:click={pauseTimer}
-          ><img src="/tmp-icons/pause.svg" alt="" /></button
+          ><img src="tmp-icons/pause.svg" alt="" /></button
         ><button
           class="stop-button"
           aria-label="Stop timer"
-          on:click={stopTimer}><img src="/tmp-icons/stop.svg" alt="" /></button
+          on:click={stopTimer}><img src="tmp-icons/stop.svg" alt="" /></button
         >
       </div>
       <span class="running-label">RUNNING</span><time
@@ -70,7 +70,7 @@
         class="header-icon"
         aria-label="Start timer"
         on:click={openTimerSetup}
-        ><img src="/tmp-icons/play.svg" alt="" /></button
+        ><img src="tmp-icons/play.svg" alt="" /></button
       >{/if}
   </div>
   {#if $timerSetup}<form

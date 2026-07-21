@@ -3,7 +3,7 @@
 </script>
 
 <div class="privacy-control">
-  <button class="control-button" aria-label={obfuscationLabel($obfuscationMode)} aria-pressed={$obfuscationMode !== 'none'} title={obfuscationLabel($obfuscationMode)} on:click={cycleObfuscation}><img src={`/tmp-icons/${$obfuscationMode === 'all' ? 'obfuscate-all' : $obfuscationMode === 'some' ? 'obfuscated' : 'obfuscation'}.svg`} alt="" /></button>
+  <button class="control-button" aria-label={obfuscationLabel($obfuscationMode)} aria-pressed={$obfuscationMode !== 'none'} title={obfuscationLabel($obfuscationMode)} on:click={cycleObfuscation}><img src={`tmp-icons/${$obfuscationMode === 'all' ? 'obfuscate-all' : $obfuscationMode === 'some' ? 'obfuscated' : 'obfuscation'}.svg`} alt="" /></button>
 </div>
 
 <style>
