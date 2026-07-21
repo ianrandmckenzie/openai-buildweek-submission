@@ -12,12 +12,16 @@
   import CustomAISettings from './CustomAISettings.svelte';
   import { clerkAIConfig, saveClerkAIConfig, cloudSyncConfig, saveCloudSyncConfig } from '../clerk/ai-config';
   import { calendarPreferences, saveCalendarPreferences, type DisplayedDays } from '../calendar/preferences';
+  import { generateExampleData } from '../settings/example-data';
+  import { showToast } from '../ui/toast';
   type SettingsTab = 'general' | 'projects' | 'screen-privacy' | 'backend' | 'advanced';
   export let initialTab: SettingsTab = 'general';
   const settingsTabs: SettingsTab[] = ['general', 'projects', 'screen-privacy', 'backend', 'advanced'];
   let activeTab: SettingsTab = settingsTabs.includes(initialTab) ? initialTab : 'general';
   $: if (!settingsTabs.includes(initialTab)) activeTab = 'general';
   let message = '';
+  let generatingExamples = false;
+  async function generateExamples(): Promise<void> { generatingExamples = true; try { await generateExampleData(); showToast('Example workspace generated.'); } catch { showToast('Unable to generate example data.', 'error'); } finally { generatingExamples = false; } }
   let importText = '';
   function exportConfig(): void {
     const blob = new Blob(
@@ -26,15 +30,15 @@
     );
     createDownloadAdapter()
       .download(blob, 'kenzie-deskclerk-backup.json')
-      .then(() => (message = 'Backup exported.'))
-      .catch(() => (message = 'Export unavailable in this runtime.'));
+      .then(() => showToast('Backup exported.'))
+      .catch(() => showToast('Export unavailable in this runtime.', 'error'));
   }
   function validateImport(): void {
     try {
       parseDashboardExport(importText);
-      message = 'Backup format is valid and ready to import.';
+      showToast('Backup format is valid and ready to import.', 'info');
     } catch (error) {
-      message = error instanceof Error ? error.message : 'Invalid backup.';
+      showToast(error instanceof Error ? error.message : 'Invalid backup.', 'error');
     }
   }
 </script>
@@ -83,6 +87,10 @@
           <label>Displayed days<select value={$calendarPreferences.displayedDays} on:change={(event) => saveCalendarPreferences({ ...$calendarPreferences, displayedDays: (event.currentTarget as HTMLSelectElement).value as DisplayedDays })}><option value="full-week">Full week</option><option value="weekdays">Weekdays only</option><option value="weekdays-full-weekends">Weekdays only but full week on weekends</option></select></label>
           <p>Choose whether the calendar displays weekends.</p>
         </section><section class="settings-section">
+          <h4>Example workspace</h4>
+          <p>Populate DeskClerk with a realistic roofing and web-design workspace to explore the app.</p>
+          <button on:click={generateExamples} disabled={generatingExamples}>{generatingExamples ? 'Generating…' : 'Generate Example Data'}</button>
+        </section><section class="settings-section">
           <h4>Data backup</h4>
           <p>
             Export a structured local backup or validate an existing dashboard
@@ -98,7 +106,7 @@
               {message}
             </p>{/if}
         </section>
-        {:else if activeTab === 'backend'}<BackendSettings />{:else if activeTab === 'projects'}<ProjectsPanel />{:else if activeTab === 'screen-privacy'}<PrivacySettings />{:else if activeTab === 'advanced'}<CustomAISettings showCloud={false} cloud={$cloudSyncConfig} ai={$clerkAIConfig} onChange={(cloud, ai) => { saveCloudSyncConfig(cloud); saveClerkAIConfig(ai); message = 'AI settings saved.'; }} />{/if}
+        {:else if activeTab === 'backend'}<BackendSettings />{:else if activeTab === 'projects'}<ProjectsPanel />{:else if activeTab === 'screen-privacy'}<PrivacySettings />{:else if activeTab === 'advanced'}<CustomAISettings showCloud={false} cloud={$cloudSyncConfig} ai={$clerkAIConfig} onChange={(cloud, ai) => { saveCloudSyncConfig(cloud); saveClerkAIConfig(ai); showToast('AI settings saved.'); }} />{/if}
       </div>
   </section>
 </div>

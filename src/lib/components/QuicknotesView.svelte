@@ -14,6 +14,7 @@
   import type { DocumentRecord } from '../documents/state';
   import { loadDocuments } from '../documents/state';
   import { hydrateJsonState, readJsonState, writeJsonState } from '../storage/json-state';
+  import { showToast } from '../ui/toast';
   
   import ScopeToggle from './ScopeToggle.svelte';
   import EventModal from './EventModal.svelte';
@@ -147,6 +148,7 @@
     );
     cards = cards.map((card) => (card.id === saved.id ? decode(saved) : card));
     selected = undefined;
+    showToast('Quicknote saved.');
   }
   async function add(): Promise<void> {
     if (!title.trim() && !body.trim()) return;
@@ -165,6 +167,7 @@
     title = '';
     body = '';
     createOpen = false;
+    showToast('Quicknote added.');
   }
   async function remove(): Promise<void> {
     if (!selected) return;
@@ -500,6 +503,9 @@
   }
   .note-card:hover .hover-actions {
     opacity: 1;
+  }
+  :root[data-theme='dark'] .modal footer button img {
+    filter: none;
   }
   .hover-actions button,
   .modal header button {

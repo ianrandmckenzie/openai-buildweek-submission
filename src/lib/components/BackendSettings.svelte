@@ -4,18 +4,19 @@
   import { createBackendClient } from '../integrations/backend';
   import CustomAISettings from './CustomAISettings.svelte';
   import { clerkAIConfig, saveClerkAIConfig, cloudSyncConfig, saveCloudSyncConfig } from '../clerk/ai-config';
+  import { showToast } from '../ui/toast';
   const storage = new Storage();
-  let enabled = false, baseUrl = 'http://127.0.0.1:8787', deviceToken = '', deviceId = '', pairingCode = '', deviceName = 'My DeskClerk device', status = '', busy = false;
+  let enabled = false, baseUrl = 'http://127.0.0.1:8787', deviceToken = '', deviceId = '', pairingCode = '', deviceName = 'My DeskClerk device', busy = false;
   async function load(){const settings=await storage.list('settings');const values=new Map(settings.map(s=>[s.key,s.value]));enabled=values.get('backend.enabled')===true;baseUrl=typeof values.get('backend.base_url')==='string'?values.get('backend.base_url') as string:baseUrl;deviceToken=typeof values.get('backend.device_token')==='string'?values.get('backend.device_token') as string:'';deviceId=typeof values.get('backend.device_id')==='string'?values.get('backend.device_id') as string:'';}
   async function save(key:string,value:unknown){const current=(await storage.list('settings')).find(s=>s.key===key);if(current) await storage.update('settings',{...current,value});else await storage.create('settings',{id:crypto.randomUUID(),key,value});}
-  async function saveConfig(){await Promise.all([save('backend.enabled',enabled),save('backend.base_url',baseUrl.replace(/\/$/,'')),save('backend.device_token',deviceToken),save('backend.device_id',deviceId)]);if(typeof window!=='undefined')window.dispatchEvent(new Event('deskclerk:backend-config-changed'));status='Backend settings saved.';}
-  async function checkHealth(){busy=true;try{await createBackendClient({enabled:true,baseUrl}).health();status='Backend is reachable.'}catch(e){status=e instanceof Error?e.message:'Backend is unavailable.'}finally{busy=false}}
-  async function pair(){if(!pairingCode.trim()){status='Enter the pairing code from the backend admin page.';return}busy=true;try{const result=await createBackendClient({enabled:true,baseUrl}).pair({code:pairingCode,name:deviceName,platform:navigator.platform,app_version:'0.1.0'}) as {data?:{device_id:string,device_token:string}};deviceId=result.data?.device_id??'';deviceToken=result.data?.device_token??'';enabled=true;pairingCode='';await saveConfig();status='Device paired. The token is stored in IndexedDB and will not be shown again.'}catch(e){status=e instanceof Error?e.message:'Pairing failed.'}finally{busy=false}}
+  async function saveConfig(notify = true){try { await Promise.all([save('backend.enabled',enabled),save('backend.base_url',baseUrl.replace(/\/$/,'')),save('backend.device_token',deviceToken),save('backend.device_id',deviceId)]);if(typeof window!=='undefined')window.dispatchEvent(new Event('deskclerk:backend-config-changed'));if(notify) showToast('Backend settings saved.'); } catch (error) { showToast(error instanceof Error ? error.message : 'Unable to save backend settings.', 'error'); throw error; }}
+  async function checkHealth(){busy=true;try{await createBackendClient({enabled:true,baseUrl}).health();showToast('Backend is reachable.','info')}catch(e){showToast(e instanceof Error?e.message:'Backend is unavailable.','error')}finally{busy=false}}
+  async function pair(){if(!pairingCode.trim()){showToast('Enter the pairing code from the backend admin page.','error');return}busy=true;try{const result=await createBackendClient({enabled:true,baseUrl}).pair({code:pairingCode,name:deviceName,platform:navigator.platform,app_version:'0.1.0'}) as {data?:{device_id:string,device_token:string}};deviceId=result.data?.device_id??'';deviceToken=result.data?.device_token??'';enabled=true;pairingCode='';await saveConfig(false);showToast('Device paired. The token is stored securely.')}catch(e){showToast(e instanceof Error?e.message:'Pairing failed.','error')}finally{busy=false}}
   onMount(load);
 </script>
 <section class="settings-section"><h4>Remote backend</h4><p>DeskClerk stays local-first. Connect an optional backend for device pairing and synchronization.</p><label>Backend URL<input bind:value={baseUrl} placeholder="http://127.0.0.1:8787" /></label><label class="check"><input type="checkbox" bind:checked={enabled} /> Enable remote persistence and sync</label><div class="actions"><button on:click={saveConfig}>Save settings</button><button class="secondary" on:click={checkHealth} disabled={busy}>Check connection</button></div></section>
-<section class="settings-section"><h4>Pair this device</h4><p>Open the backend admin page, generate a pairing code, then enter it here.</p><label>Device name<input bind:value={deviceName} /></label><label>Pairing code<input bind:value={pairingCode} placeholder="8-character code" maxlength="8" /></label><button on:click={pair} disabled={busy}>Pair device</button>{#if deviceId}<p class="muted">Paired device: {deviceId}</p>{/if}</section>{#if status}<p class="status-message" role="status">{status}</p>{/if}
-<CustomAISettings showCloud={true} showAI={false} cloud={$cloudSyncConfig} ai={$clerkAIConfig} onChange={(cloud) => { saveCloudSyncConfig(cloud); status = 'BYOB settings saved.'; }} />
+<section class="settings-section"><h4>Pair this device</h4><p>Open the backend admin page, generate a pairing code, then enter it here.</p><label>Device name<input bind:value={deviceName} /></label><label>Pairing code<input bind:value={pairingCode} placeholder="8-character code" maxlength="8" /></label><button on:click={pair} disabled={busy}>Pair device</button>{#if deviceId}<p class="muted">Paired device: {deviceId}</p>{/if}</section>
+<CustomAISettings showCloud={true} showAI={false} cloud={$cloudSyncConfig} ai={$clerkAIConfig} onChange={(cloud) => { saveCloudSyncConfig(cloud); showToast('BYOB settings saved.'); }} />
 <style>
   .settings-section { display:grid; gap:.65rem; padding:0 0 1.5rem; }
   .settings-section + .settings-section { padding-top:1.5rem; border-top:1px solid var(--border-custom); }
@@ -30,7 +31,6 @@
   button { width:fit-content; padding:.55rem .75rem; border:1px solid var(--border-custom); border-radius:.4rem; background:var(--accent-primary); color:var(--text-inverse); font:inherit; cursor:pointer; }
   button.secondary { background:var(--bg-elevated); color:var(--text-main); }
   button:disabled { opacity:.55; cursor:wait; }
-  .status-message { color:var(--text-main); }
   .muted { color:var(--text-muted); }
   @media(max-width:600px){.actions{display:grid}.actions button{width:100%}}
 </style>

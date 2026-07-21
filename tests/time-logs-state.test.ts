@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
-import { activeTimeLog, deleteTimeLog, groupedTimeLogs, logFromCalendarEvent, pauseTimer, resumeTimer, startTimer, stopTimer, timeLogs, toggleBlur, update } from '../src/lib/time/state';
+import { activeTimeLog, deleteTimeLog, groupedTimeLogs, logFromCalendarEvent, pauseTimer, reloadTimeLogs, resumeTimer, startTimer, stopTimer, timeLogs, toggleBlur, update } from '../src/lib/time/state';
 import { searchRecords } from '../src/lib/search/index';
-import { clearJsonState } from '../src/lib/storage/json-state';
+import { clearJsonState, writeJsonState } from '../src/lib/storage/json-state';
 
 const sample = (overrides: Record<string, unknown> = {}) => ({ id: 'a', group_id: 'g', project_id: 'p1', title: 'Write report', description: 'Draft the report', started_at: 1000, ended_at: 2000, duration_seconds: 1, active: false, paused: false, blurred: false, ...overrides });
 
@@ -61,5 +61,11 @@ describe('time log expectations', () => {
 
   it('makes time logs searchable in the Search sidebar data model', () => {
     const result = searchRecords({ time_logs: [{ ...sample(), deleted_at: null } as never] }, 'draft'); expect(result[0]).toMatchObject({ type: 'Time log', title: 'Write report' }); expect(result[0].text).toContain('Draft the report');
+  });
+
+  it('reloads newly generated logs into the mounted time-log view', async () => {
+    writeJsonState('dashboard.time-logs.v1', [sample({ id: 'generated', project_id: 'project-1' })]);
+    await reloadTimeLogs();
+    expect(get(timeLogs).map((log) => log.id)).toEqual(['generated']);
   });
 });

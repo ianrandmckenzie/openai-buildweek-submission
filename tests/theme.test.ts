@@ -7,6 +7,11 @@ describe('theme tokens', () => {
   it('maps light and dark modes to complete token sets', () => { expect(tokensForMode('light')).toEqual(lightTokens); expect(tokensForMode('dark')).toEqual(darkTokens); });
   it('resolves system mode from appearance preference', () => { expect(resolveColorMode('system', true)).toBe('dark'); expect(resolveColorMode('system', false)).toBe('light'); expect(resolveColorMode('dark', false)).toBe('dark'); });
   it('filters invalid custom token values', () => { expect(sanitizeTokenOverrides({ '--accent-primary': '#abc', '--text-main': 'red' })).toEqual({ '--accent-primary': '#abc' }); });
+  it('uses neutral slate accents instead of blue or indigo in light mode', () => {
+    expect(lightTokens['--accent-primary']).toBe('#1f2937');
+    expect(lightTokens['--accent-secondary']).toBe('#f1f5f9');
+    expect(lightTokens['--focus-ring']).toBe('#475569');
+  });
 });
 
 describe('theme controller', () => {

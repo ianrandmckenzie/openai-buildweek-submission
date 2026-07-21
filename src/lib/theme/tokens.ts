@@ -17,13 +17,13 @@ export interface ThemeTokens {
 export const lightTokens: ThemeTokens = {
   '--bg-primary': '#ffffff', '--bg-secondary': '#f6f7f9', '--bg-elevated': '#ffffff',
   '--text-main': '#17191c', '--text-muted': '#626a73', '--text-inverse': '#ffffff',
-  '--border-custom': '#d9dde3', '--accent-primary': '#3457d5', '--accent-secondary': '#e5eaff', '--focus-ring': '#3457d5',
+  '--border-custom': '#d1d5db', '--accent-primary': '#1f2937', '--accent-secondary': '#f1f5f9', '--focus-ring': '#475569',
 };
 
 export const darkTokens: ThemeTokens = {
   '--bg-primary': '#000000', '--bg-secondary': '#0c111d', '--bg-elevated': '#101727',
   '--text-main': '#edf3ff', '--text-muted': '#8b9bb5', '--text-inverse': '#000000',
-  '--border-custom': '#1e3558', '--accent-primary': '#f4f7ff', '--accent-secondary': '#111c31', '--focus-ring': '#8ea9d5',
+  '--border-custom': '#334155', '--accent-primary': '#f8fafc', '--accent-secondary': '#1e293b', '--focus-ring': '#94a3b8',
 };
 
 export function tokensForMode(mode: ResolvedColorMode, overrides: Partial<ThemeTokens> = {}): ThemeTokens {

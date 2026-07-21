@@ -2,7 +2,8 @@
   import { createProject } from '../projects/state';
   import { createEventDispatcher, onMount } from 'svelte';
   const dispatch = createEventDispatcher<{ close: void; created: void }>(); let name = ''; let error = '';
-  function submit(): void { try { createProject(name); dispatch('created'); dispatch('close'); } catch (cause) { error = cause instanceof Error ? cause.message : 'Unable to create project'; } }
+  import { showToast } from '../ui/toast';
+  function submit(): void { try { createProject(name); showToast('Project created.'); dispatch('created'); dispatch('close'); } catch (cause) { error = cause instanceof Error ? cause.message : 'Unable to create project'; showToast(error, 'error'); } }
   onMount(() => { const handler = (event: KeyboardEvent) => event.key === 'Escape' && dispatch('close'); window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); });
 </script>
 <div class="backdrop" role="presentation" on:click={(event) => event.target === event.currentTarget && dispatch('close')}><section class="modal" role="dialog" aria-modal="true" aria-label="Create project"><header><h3>New Project</h3><button aria-label="Close" on:click={() => dispatch('close')}>×</button></header><form on:submit|preventDefault={submit}><label>Project name<input aria-label="Project name" bind:value={name} autofocus placeholder="e.g. Personal" /></label>{#if error}<p class="error">{error}</p>{/if}<footer><button type="button" class="secondary" on:click={() => dispatch('close')}>Cancel</button><button type="submit">Create project</button></footer></form></section></div>

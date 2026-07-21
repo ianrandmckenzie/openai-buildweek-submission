@@ -8,13 +8,13 @@
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fb;
   --bg-elevated: #ffffff;
-  --text-main: #14203a;
-  --text-muted: #66748e;
+  --text-main: #111827;
+  --text-muted: #64748b;
   --text-inverse: #ffffff;
-  --border-custom: #d8e0ed;
-  --accent-primary: #13203c;
-  --accent-secondary: #edf2f9;
-  --focus-ring: #8ba4cc;
+  --border-custom: #d1d5db;
+  --accent-primary: #1f2937;
+  --accent-secondary: #f1f5f9;
+  --focus-ring: #475569;
 }
 
 .font-sans { font-family: 'Raleway', sans-serif; }

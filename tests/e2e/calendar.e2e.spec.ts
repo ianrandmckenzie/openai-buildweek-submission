@@ -1,8 +1,27 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function seedCalendarData(page: Page): Promise<void> {
+  await page.evaluate(() => new Promise<void>((resolve, reject) => {
+    const request = indexedDB.open('kenzie-deskclerk', 2);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const db = request.result;
+      const now = Date.now();
+      const project = { id: 'default-project', name: 'E2E Project', created_at: now, updated_at: now, deleted_at: null, synced_at: null };
+      const task = { id: 'e2e-task', project_id: project.id, title: 'E2E Task', completed: false, due_at: now, created_at: now, updated_at: now, deleted_at: null, synced_at: null };
+      const event = { id: 'e2e-event', project_id: project.id, title: 'E2E Event', starts_at: now, ends_at: now + 60 * 60 * 1000, all_day: false, repeat: 'none', completed: false, created_at: now, updated_at: now, deleted_at: null, synced_at: null };
+      const tx = db.transaction(['projects', 'tasks', 'events'], 'readwrite');
+      tx.objectStore('projects').put(project); tx.objectStore('tasks').put(task); tx.objectStore('events').put(event);
+      tx.oncomplete = () => { db.close(); resolve(); }; tx.onerror = () => reject(tx.error);
+    };
+  }));
+}
 
 test.describe('Calendar', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+    await seedCalendarData(page);
+    await page.reload();
     await page.getByRole('button', { name: 'Calendar' }).click();
   });
 
@@ -41,23 +60,20 @@ test.describe('Calendar', () => {
   });
 
   test('opens the clicked calendar card details', async ({ page }) => {
-    const card = page.locator('.calendar-item button').first();
-    test.skip(!(await card.count()), 'Requires a seeded calendar record');
+    const card = page.getByRole('button', { name: 'E2E Task' });
     await card.click();
     await expect(page.getByRole('dialog')).toBeVisible();
   });
 
   test('Play starts a time log at click time', async ({ page }) => {
-    const card = page.locator('.calendar-item button').first();
-    test.skip(!(await card.count()), 'Requires a seeded task');
+    const card = page.getByRole('button', { name: 'E2E Task' });
     await card.click();
     await page.getByRole('button', { name: 'Play' }).click();
     await expect(page.getByText('Time Logs')).toBeVisible();
   });
 
   test('task time logs keep the task title', async ({ page }) => {
-    const card = page.locator('.calendar-item button').first();
-    test.skip(!(await card.count()), 'Requires a seeded task');
+    const card = page.getByRole('button', { name: 'E2E Task' });
     const title = await card.innerText();
     await card.click(); await page.getByRole('button', { name: 'Play' }).click();
     await expect(page.getByText(title).last()).toBeVisible();
@@ -65,15 +81,13 @@ test.describe('Calendar', () => {
 
   test('completing a timed event creates a matching log', async ({ page }) => {
     const event = page.locator('.calendar-item').filter({ has: page.locator('input[type="checkbox"]:not(:disabled)') }).first();
-    test.skip(!(await event.count()), 'Requires a seeded timed event');
-    const title = await event.locator('button').innerText();
+    const title = await event.getByRole('button', { name: 'E2E Event' }).innerText();
     await event.locator('input[type="checkbox"]').check();
     await expect(page.getByText(title).last()).toBeVisible();
   });
 
   test('deleting a record removes it from storage and the calendar', async ({ page }) => {
-    const card = page.locator('.calendar-item button').first();
-    test.skip(!(await card.count()), 'Requires a seeded calendar record');
+    const card = page.getByRole('button', { name: 'E2E Task' });
     const title = await card.innerText(); await card.click(); await page.getByRole('button', { name: 'Delete' }).click();
     await expect(page.locator('.calendar-item button', { hasText: title })).toHaveCount(0);
   });

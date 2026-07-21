@@ -6,4 +6,9 @@ describe('calendar utilities', () => {
   it('supports Monday-starting calendars and month labels', () => { expect(monthMatrix(2023, 9, 1)[0].isoDate).toBe('2023-09-25'); expect(monthLabel(2023, 9)).toBe('October 2023'); });
   it('filters by project and populates items by local calendar date', () => { const items: CalendarItem[] = [{ id: 'a', project_id: 'p1', title: 'One', starts_at: Date.parse('2024-02-29T10:00:00Z') }, { id: 'b', project_id: 'p2', title: 'Two', starts_at: Date.parse('2024-02-29T12:00:00Z') }]; const days = populateMonth(monthMatrix(2024, 1), filterCalendarItems(items, 'p1')); expect(days.find((day) => day.isoDate === '2024-02-29')?.items.map((item) => item.id)).toEqual(['a']); expect(filterCalendarItems(items)).toHaveLength(2); });
   it('never leaks another project into the current project calendar', () => { const items: CalendarItem[] = [{ id: 'current', project_id: 'current-project', title: 'Current', starts_at: 1000 }, { id: 'other', project_id: 'other-project', title: 'Other', starts_at: 1000 }]; expect(filterCalendarItems(items, 'current-project').map((item) => item.id)).toEqual(['current']); });
+  it('ignores persisted items with invalid start timestamps instead of throwing', () => {
+    const invalidItem = { id: 'invalid', project_id: 'p1', title: 'Invalid', starts_at: Number.NaN } as CalendarItem;
+    expect(() => populateMonth(monthMatrix(2024, 1), [invalidItem])).not.toThrow();
+    expect(populateMonth(monthMatrix(2024, 1), [invalidItem]).flatMap((day) => day.items)).toEqual([]);
+  });
 });

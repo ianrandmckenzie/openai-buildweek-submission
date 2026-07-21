@@ -21,7 +21,9 @@ export interface CalendarDay {
   items: CalendarItem[];
 }
 
-function dateKey(date: Date): string { return date.toISOString().slice(0, 10); }
+function dateKey(date: Date): string {
+  return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : '';
+}
 
 export function monthMatrix(year: number, month: number, weekStartsOn = 0): CalendarDay[] {
   if (!Number.isInteger(year) || !Number.isInteger(month) || month < 0 || month > 11) throw new Error('Invalid calendar month');
@@ -42,6 +44,7 @@ export function populateMonth(days: CalendarDay[], items: CalendarItem[]): Calen
   const byDate = new Map<string, CalendarItem[]>();
   for (const item of items) {
     const key = dateKey(new Date(item.starts_at));
+    if (!key) continue;
     const existing = byDate.get(key) ?? [];
     existing.push(item);
     byDate.set(key, existing);

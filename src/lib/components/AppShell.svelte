@@ -17,6 +17,7 @@
   onMount(() => { void loadProjects(); return createShortcutListener().destroy; });
   import MainCanvas from './MainCanvas.svelte';
   import TopBar from './TopBar.svelte';
+  import ToastHost from './ToastHost.svelte';
   export let projects: string[] = [];
 </script>
 
@@ -26,6 +27,7 @@
   </div>
   {#if $settingsOpen}<SettingsPanel initialTab={$settingsTab} />{/if}
   <ShortcutOverlay />
+  <ToastHost />
 </div>
 
 <style>
